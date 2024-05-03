@@ -1,9 +1,12 @@
 import os
 from psm.logger import psm_logger
 from shutil import rmtree
-from psm.config import PROJECT_DIRS, PROJECT_lINKS
+#from psm.config import PROJECT_DIRS, PROJECT_lINKS
 
-class PSMProject:
+PROJECT_DIRS=[]
+PROJECT_lINKS=[]
+
+class PSMSession:
     def __init__(self, name=False, path=False, debug=False):
         self.name = name
         self.base_dir = path

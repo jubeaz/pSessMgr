@@ -5,7 +5,7 @@ from typing_extensions import Annotated
 from pathlib import Path
 from typing import Optional
 from psm.logger import psm_logger, LOGLEVEL, set_logging_level
-from psm.modules.project import PSMProject
+from psm.modules.session import PSMSession
 
 
 app = typer.Typer()
@@ -32,13 +32,13 @@ def create(
     debug: Annotated[LOGLEVEL, typer.Option("--debug", "-d", help="debug mode")] = LOGLEVEL.DEBUG
     ):
     """
-    Create a new project
+    Create a new pentest session
     """
     set_logging_level(debug)
-    project = PSMProject(name=name,path=path,debug=debug)
-    print(project)
+    session = PSMSession(name=name,path=path,debug=debug)
+    print(session)
     try:
-        project.create()
+        session.create()
     except:
         raise typer.Abort()
 
@@ -60,26 +60,26 @@ def destroy(
     debug: Annotated[LOGLEVEL, typer.Option("--debug", "-d", help="debug mode")] = LOGLEVEL.DEBUG
     ):
     """
-    Destroy a project
+    Destroy a pentest session
     """
-    project = PROJECT(name=name,path=path,debug=debug)
-    print(project)
+    session = PSMSession(name=name,path=path,debug=debug)
+    print(session)
     try:
-        project.destroy()
+        session.destroy()
     except:
         raise typer.Abort()   
 
 @app.command()
 def activate(debug: Annotated[Optional[bool], typer.Option("--debug", "-d", help="debug mode")] = False):
     """
-    activate a project
+    activate a pentest session
     """
     return
 
 @app.command()
 def close(debug: Annotated[Optional[bool], typer.Option("--debug", "-d", help="debug mode")] = False):
     """
-    close a project
+    close a pentest session
     """
     return
 
