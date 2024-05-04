@@ -1,5 +1,8 @@
 import os
 import configparser
+import sys
+import importlib.util
+from psm.loaders.toolloader import ToolLoader
 from psm.logger import psm_logger
 from shutil import rmtree
 from psm.psmdb import PSMDB
@@ -14,6 +17,7 @@ class PSMSession:
         self.base_dir = path
         self.session_id = None
         self.full_path = None
+        self.tools_path = []
         if path:
             self.full_path = os.path.join(self.base_dir, self.name)
 
@@ -33,6 +37,15 @@ class PSMSession:
             os.symlink(s[0], os.path.join(self.full_path, s[1]))
         psm_logger.debug("[*] symlinks created")
         psm_logger.info("[*] session created on filesystem")
+
+    def _copy_tools_data(self):
+        t_loader = ToolLoader()
+        tools = t_loader.get_tools()
+        for t, v in tools.items():
+            m = t_loader.load_tool(v["path"])
+            psm_tool = m.PSMTool()
+            self.tools_path.append(psm_tool.get_locations())
+
 
     def _check_creation(self):
         if os.path.exists(self.full_path):
@@ -74,9 +87,13 @@ class PSMSession:
     def activate(self):
         # check it exists
         # manage tools links in case new tools
-        if psm_config.get("psm", "current_session") == self.name:
+        current_session = psm_config.get("psm", "current_session")
+        if current_session == self.name :
             psm_logger.info(f"[*] session {self.name} already active")
             return 
+        if current_session != self.name :
+            psm_logger.error(f"[*] session {current_session} is active please deactivate it")
+            raise RecursionError("another session is active")        
         # rewrite config
         psm_config.set("psm", "current_session", self.name)
         with open(CONFIG_PATH, "w") as configfile:
@@ -88,6 +105,6 @@ class PSMSession:
             return 
         # check it exists
         # manage tools links
-        psm_config.set("psm", "current_session", self.name)
+        psm_config.set("psm", "current_session", "")
         with open(CONFIG_PATH, "w") as configfile:
             psm_config.write(configfile)
