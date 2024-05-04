@@ -15,23 +15,25 @@ class PSMDB():
         self.db_path = DB_PATH
 
     def create_db(self):
-        if not exists(DB_PATH):
-            try: 
-                conn = self.create_connection()
-                cur = conn.cursor()
-                cur.execute("""CREATE TABLE "sessions" (
-                            "id" integer PRIMARY KEY,
-                            "name" text,
-                            "full_path" text,
-                            UNIQUE(name)
-                            )"""
-                        )
-                conn.commit()
-                psm_logger.debug("batabase created")
-            except sqlite3.Error as e:
-                psm_logger.error(e)
-                raise
-            finally:
+        if exists(DB_PATH):
+            return
+        try: 
+            conn = self.create_connection()
+            cur = conn.cursor()
+            cur.execute("""CREATE TABLE "sessions" (
+                        "id" integer PRIMARY KEY,
+                        "name" text,
+                        "full_path" text,
+                        UNIQUE(name)
+                        )"""
+                    )
+            conn.commit()
+            psm_logger.debug("batabase created")
+        except sqlite3.Error as e:
+            psm_logger.error(e)
+            raise
+        finally:
+            if conn:
                 conn.close()
         
     def create_connection(self):
@@ -48,11 +50,18 @@ class PSMDB():
                   VALUES(?, ?) '''
         if not full_path:
             raise RuntimeError("no path provided")
-        conn = self.create_connection()
-        cur = conn.cursor()
-        cur.execute(sql, [name, full_path])
-        conn.commit()
-        conn.close()
+        try: 
+            conn = self.create_connection()
+            cur = conn.cursor()
+            cur.execute(sql, [name, full_path])
+            conn.commit()
+        except sqlite3.Error as e:
+            psm_logger.error(e)
+            raise RuntimeError("create_sesssion_error")
+        finally:
+            if conn:
+                conn.close()
+
         return cur.lastrowid
     
     def list_session(self):
@@ -75,6 +84,7 @@ class PSMDB():
         except sqlite3.Error:
             session_id = -1
             full_path = None
+            psm_logger.debug(f"{name} session not found in db")
         finally:
             if conn:
                 conn.close()
@@ -84,8 +94,12 @@ class PSMDB():
     def delete_session(self, session_id):
         sql = ''' DELETE FROM sessions 
                   WHERE id = ? '''
-        conn = self.create_connection()
-        cur = conn.cursor()
-        cur.execute(sql, [session_id])
-        conn.commit()
-        conn.close()
+        try: 
+            conn = self.create_connection()
+            cur = conn.cursor()
+            cur.execute(sql, [session_id])
+            conn.commit()
+            conn.close()
+        except sqlite3.Error as e:
+            psm_logger.error(e)
+            raise

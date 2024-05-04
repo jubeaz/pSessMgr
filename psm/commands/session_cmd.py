@@ -13,7 +13,6 @@ app = typer.Typer()
 def get_current_path():
     return os.getcwd()
 
-
 @app.command()
 def build(
     name: Annotated[str, typer.Argument()],
@@ -37,7 +36,7 @@ def build(
     set_logging_level(debug)
     session = PSMSession(name=name,path=path)
     session.build()
-    print("[*] session builded")
+    print("[*] Session builded")
 
 
 @app.command()
@@ -58,7 +57,7 @@ def destroy(
     """
     session = PSMSession(name=name)
     session.destroy()
-    print("[*] session destoyed")
+    print("[*] Session destoyed")
 
 @app.command()
 def activate(
@@ -70,7 +69,7 @@ def activate(
     """
     session = PSMSession(name=name)
     session.activate()
-    print("[*] session activated")
+    print("[*] Session activated")
 
 @app.command()
 def deactivate(
@@ -78,11 +77,11 @@ def deactivate(
     debug: Annotated[LOGLEVEL, typer.Option("--debug", "-d", help="debug mode")] = LOGLEVEL.DEBUG
     ):
     """
-    activate a pentest session
+    deactivate a pentest session
     """
     session = PSMSession(name=name)
     session.deactivate()
-    print("[*] session activated")
+    print("[*] Session deactivated")
 
 
 if __name__ == "__main__":

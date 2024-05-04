@@ -28,7 +28,6 @@ class PSMSession:
         for f in session_template_folders:
             os.makedirs(os.path.join(self.full_path, f))
         psm_logger.debug("[*] folders created")
-
         # create symlins
         for s in session_template_symlinks:
             os.symlink(s[0], os.path.join(self.full_path, s[1]))
@@ -38,7 +37,7 @@ class PSMSession:
     def _check_creation(self):
         if os.path.exists(self.full_path):
             psm_logger.error(f"{self.full_path} already exist")
-            raise RuntimeError("Project exist")
+            raise RuntimeError("Session exist on fs")
 
     def build(self):
         self._check_creation()        
@@ -55,15 +54,13 @@ class PSMSession:
             rmtree(self.full_path)
             raise
 
-
-
     def destroy(self):
         self._get()
         if self.session_id != -1:
             self.psm_db.delete_session(self.session_id)
         
         if  not os.path.exists(self.full_path):
-            psm_logger.error(f"{self.full_path} does not exist")
+            psm_logger.error(f"{self.full_path} does not exist on fs")
             raise RuntimeError("Project does not exist on FS")
         try: 
             print(self.full_path)
@@ -75,11 +72,8 @@ class PSMSession:
         psm_logger.debug(f"[*] {self.full_path} destroyed")
 
     def activate(self):
-
         # check it exists
-
         # manage tools links in case new tools
-        
         if psm_config.get("psm", "current_session") == self.name:
             psm_logger.info(f"[*] session {self.name} already active")
             return 
@@ -93,9 +87,7 @@ class PSMSession:
             psm_logger.info(f"[*] session {self.name} is not active")
             return 
         # check it exists
-
         # manage tools links
-
         psm_config.set("psm", "current_session", self.name)
         with open(CONFIG_PATH, "w") as configfile:
             psm_config.write(configfile)

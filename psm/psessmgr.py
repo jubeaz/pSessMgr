@@ -1,7 +1,7 @@
 import typer
 from psm.commands import session_cmd, domain_cmd
 from psm.scripts.banner import small_banner, show_banner
-from psm.logger import psm_logger, set_logging_level
+from psm.logger import psm_logger, set_logging_level, DEFAULT_LOG_LEVEL
 from psm.console import psm_console
 from psm.first_run import first_run_setup
 import os
@@ -39,8 +39,8 @@ app.add_typer(
 
 
 def main():
+    set_logging_level(DEFAULT_LOG_LEVEL)
     show_banner()
-    set_logging_level('INFO')
     first_run_setup()
 
     app(prog_name='psm')

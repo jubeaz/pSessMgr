@@ -10,6 +10,7 @@ class LOGLEVEL(str, Enum):
     ERROR = "ERROR"
     INFO = "INFO"
 
+DEFAULT_LOG_LEVEL = LOGLEVEL.DEBUG
 #OBJ_EXTRA_FMT = {
 #    "markup": True,
 #    "highlighter": False
@@ -55,7 +56,7 @@ class PSMAdapter(logging.LoggerAdapter):
 
 def prep_logs():
     home = os.path.expanduser('~')
-    save_dir = f'{(home)}/.sccmhunter'
+    save_dir = f'{(home)}/.psm'
     logs_dir = f'{save_dir}/logs'
     loot_dir = f'{logs_dir}/loot'
     csv_dir = f'{logs_dir}/csvs'
@@ -63,7 +64,7 @@ def prep_logs():
     db_dir = f'{logs_dir}/db'
     #if not os.path.isdir(save_dir):
     #    logger.info("[!] First time use detected.")
-    #    logger.info(f"[!] SCCMHunter data will be saved to {save_dir}")
+    #    logger.info(f"[!]  data will be saved to {save_dir}")
     #    os.mkdir(save_dir)
     #if not os.path.isdir(logs_dir):
     #    os.mkdir(logs_dir)
@@ -73,10 +74,6 @@ def prep_logs():
     #    os.mkdir(csv_dir)
     #if not os.path.isdir(json_dir):
     #    os.mkdir(json_dir)
-    #if not os.path.isdir(db_dir):
-    #    os.mkdir(db_dir)
-    #    with open(f'{db_dir}/sccmhunter.db', 'w') as fp:
-    #        pass
     return logs_dir
 
 
