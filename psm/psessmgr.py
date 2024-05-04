@@ -45,9 +45,9 @@ def main():
     set_logging_level(DEFAULT_LOG_LEVEL)
     show_banner()
     first_run_setup()
-    class_loader()
+#    class_loader()
 
-    #app(prog_name='psm')
+    app(prog_name='psm')
 
 
 if __name__ == "__main__":

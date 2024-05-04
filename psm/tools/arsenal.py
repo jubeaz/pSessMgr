@@ -4,12 +4,11 @@ from psm.logger import psm_logger
 
 
 class PSMTool():
-    name = 'sqlmap'
-    config_name = 'sqlmap'
-    folder_isolation_paths = [".local/share/sqlmap"]
-    file_isolation_path = []
-    user_data_path = '.local/share/sqlmap'
-    user_config_path = None
+    name = 'arsenal'
+    config_name = 'arsenal'
+    file_isolation_path = [".arsenal.json"]
+    folder_isolation_paths = []
+    user_config_path = '.arsenal.json'
 
     def get_folder_locations(self):
         return self.folder_isolation_paths

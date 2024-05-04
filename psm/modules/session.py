@@ -1,10 +1,11 @@
 import os
 import configparser
 import sys
+import shutil
 import importlib.util
 from psm.loaders.toolloader import ToolLoader
 from psm.logger import psm_logger
-from shutil import rmtree
+from shutil import rmtree, copytree
 from psm.psmdb import PSMDB
 from psm.config import session_template_folders, session_template_symlinks, psm_config, CONFIG_PATH
 from ast import literal_eval
@@ -17,7 +18,8 @@ class PSMSession:
         self.base_dir = path
         self.session_id = None
         self.full_path = None
-        self.tools_path = []
+        self.tools_dir_path = []
+        self.tools_file_path = []
         if path:
             self.full_path = os.path.join(self.base_dir, self.name)
 
@@ -35,6 +37,7 @@ class PSMSession:
         # create symlins
         for s in session_template_symlinks:
             os.symlink(s[0], os.path.join(self.full_path, s[1]))
+        self._copy_tools_data()
         psm_logger.debug("[*] symlinks created")
         psm_logger.info("[*] session created on filesystem")
 
@@ -42,9 +45,28 @@ class PSMSession:
         t_loader = ToolLoader()
         tools = t_loader.get_tools()
         for t, v in tools.items():
+            psm_logger.debug(f"[*] processing {t} tool")
             m = t_loader.load_tool(v["path"])
             psm_tool = m.PSMTool()
-            self.tools_path.append(psm_tool.get_locations())
+            folders = psm_tool.get_folder_locations()
+            for p in folders:
+                src = os.path.join(os.path.expanduser('~'), p)
+                dst = os.path.join(self.full_path, os.path.dirname(p))
+                psm_logger.debug(f"mkdir {dst}")
+                os.makedirs(dst, exist_ok=True)
+                psm_logger.debug(f"copy tree {src} to {os.path.join(self.full_path,p)}")
+                copytree(src, os.path.join(self.full_path,p))  
+            self.tools_dir_path.append(psm_tool.get_folder_locations())
+            files = psm_tool.get_file_locations()
+            for f in files:
+                src = os.path.join(os.path.expanduser('~'), f)
+                dst = os.path.join(self.full_path, os.path.dirname(f))
+                psm_logger.debug(f"mkdir {dst}")
+                os.makedirs(dst, exist_ok=True)
+                psm_logger.debug(f"copy file {src} to {os.path.join(self.full_path,f)}")
+                shutil.copy(src, os.path.join(self.full_path,f))
+            self.tools_file_path.append(psm_tool.get_file_locations())
+            
 
 
     def _check_creation(self):
