@@ -28,5 +28,15 @@ for section in psm_default_config.sections():
 
 # THESE OPTIONS HAVE TO EXIST IN THE DEFAULT CONFIG FILE
 current_session = psm_config.get("psm", "current_session", fallback="")
+
 session_template_folders = literal_eval(psm_config.get("session_template", "folders", fallback=[]))
 session_template_symlinks = literal_eval(psm_config.get("session_template", "symlinks", fallback=[]))
+
+sqlmap_config = psm_config.get("tools", "sqlmap", fallback=".local.share.sqlmap")
+john_config = psm_config.get("tools", "john", fallback=".john")
+nxc_config = psm_config.get("tools", "nxc", fallback=".nxc")
+jwt_tools_config = psm_config.get("tools", "jwt_tools", fallback=".jwt_tools")
+hashcat_config = psm_config.get("tools", "hashcat", fallback=".local/share/hashcat")
+tplmap_config = psm_config.get("tools", "tplmap", fallback=".tplmap")
+arsenal_config = psm_config.get("tools", "arsenal", fallback=".arsenal.json")
+tmuxinator_config = psm_config.get("tools", "tmuxinator", fallback=".tmux-pentest.yml")
