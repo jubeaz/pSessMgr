@@ -1,5 +1,5 @@
 import typer
-from psm.commands import session, domain
+from psm.commands import session_cmd, domain_cmd
 from psm.scripts.banner import small_banner, show_banner
 from psm.logger import psm_logger, set_logging_level
 from psm.console import psm_console
@@ -22,14 +22,14 @@ def default_callback():
 
 callback=default_callback
 app.add_typer(
-    session.app,
+    session_cmd.app,
     name="session",
     help="Manage sessions"
 )
 
 #
 #app.add_typer(
-#    domain.app,
+#    domain_cmd.app,
 #    name="domain",
 #    help="Manage domain within a project"
 #)
@@ -40,13 +40,8 @@ app.add_typer(
 
 def main():
     show_banner()
-    set_logging_level('DEBUG')
-    first_run_setup(psm_logger)
-    #small_banner()
-#    project_name = None
-#    if "PSM_CURREN_PROJECT" in os.environ:
-#        project_name = os.environ.get('PSM_CURREN_PROJECT')
-#    print(f'project: [bold red]{project_name} [/bold red] :boom:')
+    set_logging_level('INFO')
+    first_run_setup()
 
     app(prog_name='psm')
 

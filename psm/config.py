@@ -1,7 +1,7 @@
 import os
-from os.path import join as path_join
 import configparser
-from psm.paths import PSM_PATH, DATA_PATH, DEFAULT_CONFIG_PATH, CONFIG_PATH
+from os.path import join as path_join
+from psm.paths import PSM_PATH, DEFAULT_CONFIG_PATH, CONFIG_PATH
 from psm.first_run import first_run_setup
 from psm.logger import psm_logger
 from ast import literal_eval
@@ -28,3 +28,5 @@ for section in psm_default_config.sections():
 
 # THESE OPTIONS HAVE TO EXIST IN THE DEFAULT CONFIG FILE
 current_session = psm_config.get("psm", "current_session", fallback="")
+session_template_folders = literal_eval(psm_config.get("session_template", "folders", fallback=[]))
+session_template_symlinks = literal_eval(psm_config.get("session_template", "symlinks", fallback=[]))
