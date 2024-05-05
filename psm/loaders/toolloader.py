@@ -3,6 +3,7 @@ from importlib.machinery import SourceFileLoader
 from os import listdir
 from os.path import join
 from os.path import dirname, exists, expanduser
+from psm.logger import psm_logger
 import psm
 
 class ToolLoader:
@@ -15,21 +16,25 @@ class ToolLoader:
     def module_is_sane(self, module, module_path):
         module_error = False
         if not hasattr(module, "name"):
-            self.logger.fail(f"{module_path} missing the name variable")
+            psm_logger.error(f"{module_path} missing the name variable")
             module_error = True
         elif not hasattr(module, "get_isolation_paths"):
-            self.logger.fail(f"{module_path} missing the get_isolation_paths function")
+            psm_logger.error(f"{module_path} missing the get_isolation_paths function")
             module_error = True
 
         return not module_error
 
-    def get_tools(self):
+
+    def get_tools(self, list=[]):
         tools = {}
         path = join(dirname(psm.__file__), "tools")
         for tool in listdir(path):
-            if tool[-3:] == ".py" and tool[:-3] != "__init__":
-                 tool_path = join(path, tool)
-                 tool_name = tool[:-3]
-                 tools[tool_name] = {"path": tool_path}
+            if tool[-3:] == ".py" and tool[:-3] != "__init__" and  tool[:-3] in list:
+                tool_path = join(path, tool)
+                tool_name = tool[:-3]
+                tools[tool_name] = {"path": tool_path}
+                psm_logger.debug(f"{tool_name} will be added to tools list")
+            else:
+                psm_logger.debug(f"{tool[:-3]} will NOT to tools list")     
         return tools
 

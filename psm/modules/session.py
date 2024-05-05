@@ -7,7 +7,7 @@ from psm.loaders.toolloader import ToolLoader
 from psm.logger import psm_logger
 from shutil import rmtree, copytree
 from psm.psmdb import PSMDB
-from psm.config import session_template_folders, session_template_symlinks, psm_config, CONFIG_PATH
+from psm.config import session_template_folders, session_template_symlinks, session_template_tools, psm_config, CONFIG_PATH
 from ast import literal_eval
 
 
@@ -48,7 +48,7 @@ class PSMSession:
 
     def _copy_tools_data(self):
         t_loader = ToolLoader()
-        tools = t_loader.get_tools()
+        tools = t_loader.get_tools(session_template_tools)
         for t, v in tools.items():
             psm_logger.debug(f"[*] processing {t} tool")
             m = t_loader.load_tool(v["path"])

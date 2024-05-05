@@ -10,7 +10,8 @@ rm -rf ~/.psm ; rm -rf titi ; rm -rf /tmp/titi ; poetry run psm session build ti
 poetry run psm session build -p /tmp titi
 
 
-sqlite3  -readonly ~/.psm/psm.db
+sqlite3  -readonly ~/.psm/psm.db 'select * from sessions;'
+
 
 cp -r ~/documents/pentesting-games/prolabs/nrunner/evidence/logging/nxc ~/.nxc-psm ; cp ~/.arsenal.json ~/.arsenal.json-psm ; cp -r ~/documents/pentesting-games/prolabs/nrunner/evidence/logging/sqlmap/ ~/.local/share/sqlmap-psm
 

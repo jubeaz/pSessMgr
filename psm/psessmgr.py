@@ -4,9 +4,6 @@ from psm.scripts.banner import small_banner, show_banner
 from psm.logger import psm_logger, set_logging_level, DEFAULT_LOG_LEVEL
 from psm.console import psm_console
 from psm.first_run import first_run_setup
-###########################################
-from psm.class_loader import class_loader
-###########################################
 import os
 from rich import print
 
@@ -45,7 +42,6 @@ def main():
     set_logging_level(DEFAULT_LOG_LEVEL)
     show_banner()
     first_run_setup()
-#    class_loader()
 
     app(prog_name='psm')
 

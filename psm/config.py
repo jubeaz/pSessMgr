@@ -31,6 +31,7 @@ current_session = psm_config.get("psm", "current_session", fallback="")
 
 session_template_folders = literal_eval(psm_config.get("session_template", "folders", fallback=[]))
 session_template_symlinks = literal_eval(psm_config.get("session_template", "symlinks", fallback=[]))
+session_template_tools = literal_eval(psm_config.get("session_template", "tools", fallback=[]))
 
 sqlmap_config = psm_config.get("tools", "sqlmap", fallback=".local.share.sqlmap")
 john_config = psm_config.get("tools", "john", fallback=".john")
