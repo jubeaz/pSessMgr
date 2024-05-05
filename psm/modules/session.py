@@ -122,10 +122,10 @@ class PSMSession:
             dst = os.path.join(self.full_path, p)
             # rename 
             psm_logger.debug(f"renaming {src} to {dst}.psm_save")
-            #os.rename(src, f"{src}.psm_save")
+            os.rename(src, f"{src}.psm_save")
             # create symlink
             psm_logger.debug(f"creating symlink {dst} => {src}")
-            #os.symlink(dst, src)
+            os.symlink(dst, src)
 
     def activate(self):
         # check it exists
@@ -137,7 +137,7 @@ class PSMSession:
         if self.getactive() != "":
             psm_logger.error(f"[*] session {self.getactive()} is active please deactivate it")
             raise RecursionError("another session is active")
-        psm_logger.debug(f"debug {self.tools_dir_paths}")
+        #psm_logger.debug(f"debug {self.tools_dir_paths}")
         self._activate_tools_isolation()
         # rewrite config
         psm_config.set("psm", "current_session", self.name)
@@ -150,10 +150,10 @@ class PSMSession:
             dst = os.path.join(self.full_path, p)
             # remove symlink
             psm_logger.debug(f"removing symlink {src}")
-            #os.xxx(src)
+            os.remove(src)
             # rename 
             psm_logger.debug(f"renaming {dst}.psm_save to {src}")
-            #os.rename(f"{src}.psm_save")
+            os.rename(f"{src}.psm_save", src)
 
     def deactivate(self):
         self._get()
