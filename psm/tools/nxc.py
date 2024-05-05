@@ -5,7 +5,6 @@ from psm.logger import psm_logger
 
 class PSMTool():
     name = 'nxc'
-    config_name = 'nxc'
     #isolation_paths = [".nxc"]
     isolation_paths = [".nxc-psm"]
     user_config_path = '.nxc'

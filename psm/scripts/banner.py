@@ -1,5 +1,5 @@
 # https://patorjk.com/software/taag/#p=display&f=Bloody&t=PSM
-__version__ = '0.0.1'
+__version__ = '0.1.0'
 __author__ = 'jubeaz'
 
 def show_banner():

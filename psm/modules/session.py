@@ -3,7 +3,7 @@ import configparser
 import sys
 import shutil
 import importlib.util
-from psm.loaders.toolloader import ToolLoader
+from psm.loaders.toolloader import psm_toolloader
 from psm.logger import psm_logger
 from shutil import rmtree, copytree
 from psm.psmdb import PSMDB
@@ -18,6 +18,7 @@ class PSMSession:
         self.base_dir = path
         self.session_id = None
         self.full_path = None
+        self.tools = []
         self.tools_dir_paths = []
         if path:
             self.full_path = os.path.join(self.base_dir, self.name)
@@ -32,7 +33,7 @@ class PSMSession:
         return psm_config.get("psm", "current_session") == self.name
 
     def _get(self):
-        self.session_id, self.full_path, self.tools_dir_paths = self.psm_db.get_session(self.name)
+        self.session_id, self.full_path, self.tools, self.tools_dir_paths = self.psm_db.get_session(self.name)
 
     def _create_fs(self):
         # create folders
@@ -46,36 +47,32 @@ class PSMSession:
         psm_logger.debug("[*] symlinks created")
         psm_logger.info("[*] session created on filesystem")
 
+    def _copy_tool_data(self, tool_ame):
+        psm_logger.debug(f"[*] processing {tool_ame} tool")
+        m = psm_toolloader.load_tool(tool_ame)
+        psm_tool = m.PSMTool()
+        paths = psm_tool.get_isolation_paths()
+        for path in paths:
+            src = os.path.join(os.path.expanduser('~'), path)
+            dst = os.path.join(self.full_path, os.path.dirname(path))
+            psm_logger.debug(f"mkdir {dst}")
+            os.makedirs(dst, exist_ok=True)
+            dst = os.path.join(self.full_path, path)
+            psm_logger.debug(f"{dst} is file {os.path.isfile(path)}")
+            if os.path.isdir(src):
+                psm_logger.debug(f"copy tree {src} to {dst}")
+                copytree(src, dst)
+            else: 
+                psm_logger.debug(f"copy file {src} to {dst}")
+                shutil.copy(src, dst)
+            self.tools_dir_paths.append(path)
+
     def _copy_tools_data(self):
-        t_loader = ToolLoader()
-        tools = t_loader.get_tools(session_template_tools)
-        for t, v in tools.items():
-            psm_logger.debug(f"[*] processing {t} tool")
-            m = t_loader.load_tool(v["path"])
-            psm_tool = m.PSMTool()
-            paths = psm_tool.get_isolation_paths()
-            for p in paths:
-                src = os.path.join(os.path.expanduser('~'), p)
-                dst = os.path.join(self.full_path, os.path.dirname(p))
-                psm_logger.debug(f"mkdir {dst}")
-                os.makedirs(dst, exist_ok=True)
-                dst = os.path.join(self.full_path, p)
-                psm_logger.debug(f"{dst} is file {os.path.isfile(p)}")
-                if os.path.isdir(src):
-                    psm_logger.debug(f"copy tree {src} to {dst}")
-                    copytree(src, dst)
-                else: 
-                    psm_logger.debug(f"copy file {src} to {dst}")
-                    shutil.copy(src, dst)
-                self.tools_dir_paths.append(p)
+        tools = psm_toolloader.get_tools(session_template_tools)
+        for tool_name in tools.keys():
+            self._copy_tool_data(tool_name)
+            self.tools.append(tool_name)
         psm_logger.debug(f"notes {self.tools_dir_paths}")
-
-
-    def _archive_tools_data(self):
-        return
-
-    def _link_tools_data(self):
-        return
 
     def _check_creation(self):
         if os.path.exists(self.full_path):
@@ -89,7 +86,11 @@ class PSMSession:
             psm_logger.debug(f"[*] {self.full_path} created")
             self._create_fs()
 
-            session_id = self.psm_db.create_session(self.name, self.full_path, self.tools_dir_paths)
+            session_id = self.psm_db.create_session(self.name, 
+                                                    self.full_path,
+                                                    self.tools, 
+                                                    self.tools_dir_paths,
+                                                    )
             psm_logger.debug("[*] db entry added as {}".format(session_id))
             psm_logger.info("[*] session created in database")
         except Exception as e:
@@ -100,12 +101,15 @@ class PSMSession:
     def destroy(self):
         self._get()
         # if is active
+        if self.isactive():
+            psm_logger.error(f"{self.name} is active")
+            raise RuntimeError("Can't delete active session")   
         if self.session_id != -1:
             self.psm_db.delete_session(self.session_id)
-        
+     
         if  not os.path.exists(self.full_path):
             psm_logger.error(f"{self.full_path} does not exist on fs")
-            raise RuntimeError("Project does not exist on FS")
+            raise RuntimeError("Session does not exist on FS")
         try: 
             print(self.full_path)
             rmtree(self.full_path)
@@ -116,16 +120,20 @@ class PSMSession:
         psm_logger.debug(f"[*] {self.full_path} destroyed")
 
 
+    def _isolate_tool(self, path):
+        src = os.path.join(os.path.expanduser('~'), path)
+        dst = os.path.join(self.full_path, path)
+        # rename 
+        psm_logger.debug(f"renaming {src} to {dst}.psm_save")
+        os.rename(src, f"{src}.psm_save")
+        # create symlink
+        psm_logger.debug(f"creating symlink {dst} => {src}")
+        os.symlink(dst, src)
+
     def _activate_tools_isolation(self):
-        for p in self.tools_dir_paths:
-            src = os.path.join(os.path.expanduser('~'), p)
-            dst = os.path.join(self.full_path, p)
-            # rename 
-            psm_logger.debug(f"renaming {src} to {dst}.psm_save")
-            os.rename(src, f"{src}.psm_save")
-            # create symlink
-            psm_logger.debug(f"creating symlink {dst} => {src}")
-            os.symlink(dst, src)
+        for path in self.tools_dir_paths:
+            self._isolate_tool(path)
+
 
     def activate(self):
         # check it exists
@@ -144,16 +152,19 @@ class PSMSession:
         with open(CONFIG_PATH, "w") as configfile:
             psm_config.write(configfile)
 
+    def _unisolate_tool(self, p):
+        src = os.path.join(os.path.expanduser('~'), p)
+        dst = os.path.join(self.full_path, p)
+        # remove symlink
+        psm_logger.debug(f"removing symlink {src}")
+        os.remove(src)
+        # rename 
+        psm_logger.debug(f"renaming {dst}.psm_save to {src}")
+        os.rename(f"{src}.psm_save", src)
+
     def _deactivate_tools_isolation(self):
         for p in self.tools_dir_paths:
-            src = os.path.join(os.path.expanduser('~'), p)
-            dst = os.path.join(self.full_path, p)
-            # remove symlink
-            psm_logger.debug(f"removing symlink {src}")
-            os.remove(src)
-            # rename 
-            psm_logger.debug(f"renaming {dst}.psm_save to {src}")
-            os.rename(f"{src}.psm_save", src)
+            self._unisolate_tool(p)
 
     def deactivate(self):
         self._get()
@@ -166,3 +177,37 @@ class PSMSession:
         psm_config.set("psm", "current_session", "")
         with open(CONFIG_PATH, "w") as configfile:
             psm_config.write(configfile)
+
+
+#    def add_tool(self, tool_name):
+#        if tool_name not in psm_toolloader.get_unfiltered_tools():
+#            psm_logger.error(f"[*] {tool_name} not yet supported")
+#            
+#        if tool_name in self.tools:
+#
+#        if self.isactive():
+#            psm_logger.info(f"[*] session {self.name} already active")
+#            return         
+
+    def add_tool(self, tool_name):
+        tools = psm_toolloader.get_unfiltered_tools()
+        if tool_name not in tools.keys():
+            psm_logger.error(f"[*] {tool_name} not supported")
+            raise RuntimeError("Unsupported tool")
+        self._get()
+        if tool_name in self.tools:
+            psm_logger.error(f"[*] {tool_name} already isolated in session")
+            raise RuntimeError("Already isolated tool")
+        self._copy_tool_data(tool_name)
+        self.tools.append(tool_name)
+        # update db
+        self.psm_db.update_session(self.session_id, self.tools, self.tools_dir_paths)
+        if self.isactive():
+            psm_logger.info(f"[*] isolating {tool_name} in {self.name}")
+            m = psm_toolloader.load_tool(tool_name)
+            psm_tool = m.PSMTool()
+            paths = psm_tool.get_isolation_paths()
+            for path in paths:
+                self._isolate_tool(path)
+
+

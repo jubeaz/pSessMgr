@@ -25,6 +25,7 @@ class PSMDB():
                         "id" integer PRIMARY KEY,
                         "name" text,
                         "full_path" text,
+                        "tools" text,
                         "tools_dir_paths" text,
                         UNIQUE(name)
                         )"""
@@ -47,15 +48,15 @@ class PSMDB():
             raise
         return conn
     
-    def create_session(self, name, full_path, tools_dir_paths):
-        sql = ''' INSERT INTO sessions(name, full_path, tools_dir_paths)
-                  VALUES(?, ?, ?) '''
+    def create_session(self, name, full_path, tools, tools_dir_paths):
+        sql = ''' INSERT INTO sessions(name, full_path, tools, tools_dir_paths)
+                  VALUES(?, ?, ?, ?) '''
         if not full_path:
             raise RuntimeError("no path provided")
         try: 
             conn = self.create_connection()
             cur = conn.cursor()
-            cur.execute(sql, [name, full_path, repr(tools_dir_paths)])
+            cur.execute(sql, [name, full_path, repr(tools), repr(tools_dir_paths)])
             conn.commit()
         except sqlite3.Error as e:
             psm_logger.error(e)
@@ -73,7 +74,7 @@ class PSMDB():
         psm_logger.info(tabulate(tb_ss, showindex=False, headers=tb_ss.columns, tablefmt='grid'))
 
     def get_session(self, name):
-        sql = ''' SELECT id, full_path, tools_dir_paths FROM sessions 
+        sql = ''' SELECT id, full_path, tools, tools_dir_paths FROM sessions 
                   WHERE name = ? '''
         if not name:
             raise RuntimeError("no name provided")
@@ -84,17 +85,33 @@ class PSMDB():
             record = cur.fetchone()
             session_id = record[0]
             full_path = record[1]
-            tools_dir_paths = literal_eval(record[2])
+            tools = literal_eval(record[2])
+            tools_dir_paths = literal_eval(record[3])
         except sqlite3.Error:
             session_id = -1
             full_path = None
+            tools = None
             tools_dir_paths = None
             psm_logger.debug(f"{name} session not found in db")
         finally:
             if conn:
                 conn.close()
 
-        return session_id, full_path, tools_dir_paths
+        return session_id, full_path, tools, tools_dir_paths
+
+    def update_session(self, session_id, tools, tools_dir_paths):
+        sql = ''' UPDATE sessions 
+                    SET tools = ?, tools_dir_paths = ?
+                  WHERE id = ? '''
+        try: 
+            conn = self.create_connection()
+            cur = conn.cursor()
+            cur.execute(sql, [repr(tools), repr(tools_dir_paths), session_id])
+            conn.commit()
+            conn.close()
+        except sqlite3.Error as e:
+            psm_logger.error(e)
+            raise
 
     def delete_session(self, session_id):
         sql = ''' DELETE FROM sessions 
