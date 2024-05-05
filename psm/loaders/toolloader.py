@@ -61,9 +61,9 @@ class ToolLoader:
         self.tools = {}
         path = join(dirname(psm.__file__), "tools")
         for tool in listdir(path):
-            if tool[-3:] == ".py" and tool[:-3] != "__init__":
+            if tool.endswith(".py") and not tool.startswith("__init__"):
                 tool_path = join(path, tool)
-                tool_name = tool[:-3]
+                tool_name = tool.removesuffix('.py')
                 self.tools[tool_name] = {"path": tool_path}
                 psm_logger.debug(f"{tool_name} added to tools list")
         return self.tools

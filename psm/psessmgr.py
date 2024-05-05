@@ -36,13 +36,10 @@ app.add_typer(
 #
 
 
-
-
 def main():
     set_logging_level(DEFAULT_LOG_LEVEL)
     show_banner()
     first_run_setup()
-
     app(prog_name='psm')
 
 
