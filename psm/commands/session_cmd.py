@@ -38,7 +38,6 @@ def build(
     session.build()
     print("[*] Session builded")
 
-
 @app.command()
 def list(debug: Annotated[LOGLEVEL, typer.Option("--debug", "-d", help="debug mode")] = LOGLEVEL.DEBUG):
     """

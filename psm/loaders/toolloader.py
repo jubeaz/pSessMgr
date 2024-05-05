@@ -17,8 +17,8 @@ class ToolLoader:
         if not hasattr(module, "name"):
             self.logger.fail(f"{module_path} missing the name variable")
             module_error = True
-        elif not hasattr(module, "get_folder_locations") or not hasattr(module, "get_file_locations"):
-            self.logger.fail(f"{module_path} missing the get_folder_locations/get_file_locations function")
+        elif not hasattr(module, "get_isolation_paths"):
+            self.logger.fail(f"{module_path} missing the get_isolation_paths function")
             module_error = True
 
         return not module_error
