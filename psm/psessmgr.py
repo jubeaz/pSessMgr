@@ -8,6 +8,8 @@ import os
 from rich import print
 
 
+from psm.psm_tests import my_tests
+
 app = typer.Typer(
     no_args_is_help=True,
     add_completion=False,
@@ -38,6 +40,7 @@ app.add_typer(
 
 def main():
     set_logging_level(DEFAULT_LOG_LEVEL)
+#    my_tests()
     show_banner()
     first_run_setup()
     app(prog_name='psm')
