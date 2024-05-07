@@ -8,6 +8,8 @@ from psm.logger import psm_logger
 from shutil import rmtree, copytree
 from psm.psmdb import PSMDB
 from psm.config import session_template_folders, session_template_symlinks, session_template_tools, psm_config, CONFIG_PATH
+from psm.paths import SESSION_DB_NAME
+from psm.psmsessiondb import PSMSessionDB
 from ast import literal_eval
 
 
@@ -22,6 +24,7 @@ class PSMSession:
         self.tools_dir_paths = []
         if path:
             self.full_path = os.path.join(self.base_dir, self.name)
+            self.session_db_path = os.path.join(self.full_path, SESSION_DB_NAME)
 
     def __str__(self):
         return f"{self.full_path}"
@@ -32,8 +35,9 @@ class PSMSession:
     def isactive(self):
         return psm_config.get("psm", "current_session") == self.name
 
-    def _get(self):
+    def get(self):
         self.session_id, self.full_path, self.tools, self.tools_dir_paths = self.psm_db.get_session(self.name)
+        self.session_db_path = os.path.join(self.full_path, SESSION_DB_NAME)
 
     def _create_fs(self):
         # create folders
@@ -45,7 +49,13 @@ class PSMSession:
             os.symlink(s[0], os.path.join(self.full_path, s[1]))
         self._copy_tools_data()
         psm_logger.debug("[*] symlinks created")
+        # create session database
+#        self.session_db_path = os.path.join(self.full_path, SESSION_DB_NAME)
+#        psm_session_db = PSMSessionDB(self.session_db_path)
+#        psm_session_db.create_db()
+#        psm_logger.debug(f"[*] Session database created {self.session_db_path}")
         psm_logger.info("[*] session created on filesystem")
+
 
     def _copy_tool_data(self, tool_ame):
         psm_logger.debug(f"[*] processing {tool_ame} tool")
@@ -99,7 +109,7 @@ class PSMSession:
             raise
 
     def destroy(self):
-        self._get()
+        self.get()
         # if is active
         if self.isactive():
             psm_logger.error(f"{self.name} is active")
@@ -138,13 +148,20 @@ class PSMSession:
     def activate(self):
         # check it exists
         # manage tools links in case new tools
-        self._get()
+        self.get()
+        if self.session_id == -1:
+            psm.logger.error(f"Session {name} not found in db")
+            raise RecursionError("Session not found in db")
         if self.isactive():
             psm_logger.info(f"[*] session {self.name} already active")
             return 
         if self.getactive() != "":
             psm_logger.error(f"[*] session {self.getactive()} is active please deactivate it")
             raise RecursionError("another session is active")
+#        if not os.path.exists(self.session_db_path):
+#            psm_session_db = PSMSessionDB(self.session_db_path)
+#            psm_session_db.create_db()
+#            psm_logger.info(f"[*] Session database created {self.session_db_path}")
         #psm_logger.debug(f"debug {self.tools_dir_paths}")
         self._activate_tools_isolation()
         # rewrite config
@@ -167,7 +184,10 @@ class PSMSession:
             self._unisolate_tool(p)
 
     def deactivate(self):
-        self._get()
+        self.get()
+        if self.session_id == -1:
+            psm.logger.error("Session not found in db")
+            raise RecursionError("Session not found in db")
         if not self.isactive():
             psm_logger.info(f"[*] session {self.name} is not active")
             return 
@@ -178,23 +198,15 @@ class PSMSession:
         with open(CONFIG_PATH, "w") as configfile:
             psm_config.write(configfile)
 
-
-#    def add_tool(self, tool_name):
-#        if tool_name not in psm_toolloader.get_unfiltered_tools():
-#            psm_logger.error(f"[*] {tool_name} not yet supported")
-#            
-#        if tool_name in self.tools:
-#
-#        if self.isactive():
-#            psm_logger.info(f"[*] session {self.name} already active")
-#            return         
-
     def add_tool(self, tool_name):
         tools = psm_toolloader.get_unfiltered_tools()
         if tool_name not in tools.keys():
             psm_logger.error(f"[*] {tool_name} not supported")
             raise RuntimeError("Unsupported tool")
-        self._get()
+        self.get()
+        if self.session_id == -1:
+            psm.logger.error("Session not found in db")
+            raise RecursionError("Session not found in db")
         if tool_name in self.tools:
             psm_logger.error(f"[*] {tool_name} already isolated in session")
             raise RuntimeError("Already isolated tool")

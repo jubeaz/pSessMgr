@@ -44,13 +44,3 @@ session_template_tools = literal_eval(psm_config.get("session_template", "tools"
 
 arsenal_defaults_var_values = literal_eval(psm_config.get("arsenal", "defaults_var_values", fallback=[]))
 arsenal_cheat_search_path = psm_config.get("arsenal", "cheat_search_path", fallback=".cheats")
-
-
-#sqlmap_config = psm_config.get("tools", "sqlmap", fallback=".local.share.sqlmap")
-#john_config = psm_config.get("tools", "john", fallback=".john")
-#nxc_config = psm_config.get("tools", "nxc", fallback=".nxc")
-#jwt_tools_config = psm_config.get("tools", "jwt_tools", fallback=".jwt_tools")
-#hashcat_config = psm_config.get("tools", "hashcat", fallback=".local/share/hashcat")
-#tplmap_config = psm_config.get("tools", "tplmap", fallback=".tplmap")
-#arsenal_config = psm_config.get("tools", "arsenal", fallback=".arsenal.json")
-#tmuxinator_config = psm_config.get("tools", "tmuxinator", fallback=".tmux-pentest.yml")
