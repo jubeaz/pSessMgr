@@ -39,7 +39,7 @@ class PSMComputer:
         self.psm_model.update_computer()
 
 
-    def add_fqdn(self, short):
+    def add_fqdn(self, fqdn):
         self.psm_model.get()
         self.psm_model.add_fqdn(fqdn)
         self.psm_model.update_computer()
