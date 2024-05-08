@@ -1,5 +1,5 @@
 import typer
-from psm.commands import session_cmd, domain_cmd, computer_cmd
+from psm.commands import session_cmd, domain_cmd, computer_cmd, scope_cmd
 from psm.scripts.banner import small_banner, show_banner
 from psm.logger import psm_logger, set_logging_level, DEFAULT_LOG_LEVEL
 from psm.console import psm_console
@@ -40,6 +40,12 @@ app.add_typer(
     computer_cmd.app,
     name="computer",
     help="Manage computers within a session"
+)
+
+app.add_typer(
+    scope_cmd.app,
+    name="scope",
+    help="Manage scopes within a session"
 )
 
 

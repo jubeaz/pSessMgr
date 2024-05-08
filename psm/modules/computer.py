@@ -17,9 +17,7 @@ class PSMComputer:
         self.psm_session.get()
         session_db_path = os.path.join(self.psm_session.full_path, SESSION_DB_NAME)
         self.psm_model = PSMComputerModel(session_db_path)
-        if ip is not None:
-            ipaddress.IPv4Address(ip)
-            self.psm_model.ip = ip
+        self.psm_model.ip = ip
 
     def _check(self):
         if self.psm_model.ip is None:
@@ -58,6 +56,13 @@ class PSMComputer:
         self.psm_model.get()
         self.psm_model.remove_role(role)
         self.psm_model.update_computer()
+
+    def export_etc_hosts(self):
+        res = self.psm_model.get_computers()
+        for r in res:
+            ip = r["ip"]
+            fqdns = literal_eval(r["fqdns"])
+            print(f"{ip} {', '.join(fqdns)}")
 
     def delete(self):
         self.psm_model.delete_computer()

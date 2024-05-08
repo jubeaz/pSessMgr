@@ -5,6 +5,7 @@ import pandas as dp
 from sqlalchemy import create_engine
 from ast import literal_eval
 from fqdn import FQDN
+import ipaddress
 
 from psm.logger import psm_logger
 from psm.models.object import PSMObjectModel
@@ -95,8 +96,16 @@ class PSMComputerModel(PSMObjectModel):
             self.roles.remove(role)
 
     def _check(self):
-        if not self.ip:
+        if self.ip is None:
             raise RuntimeError("Computer IP not provided")
+        else: 
+            try: 
+                ipaddress.IPv4Address(self.ip)
+            except AddressValueError:
+                psm_logger.error(f"{self.ip} is not an IPv4 address")
+                raise RuntimeError("IP not compatible")
+
+
 
     def list_computer(self):
         self.list_table("computers")
@@ -175,3 +184,20 @@ class PSMComputerModel(PSMObjectModel):
         finally:
             if conn:
                 conn.close()
+
+    def get_computers(self):
+        sql = ''' SELECT * from computers'''
+        try: 
+            conn = sqlite3.connect(self.session_db_path)
+            conn.row_factory = sqlite3.Row
+            cur = conn.cursor()
+            cur.execute(sql)
+            records = cur.fetchall()
+
+        except sqlite3.Error as e:
+            psm_logger.debug(e)
+            raise
+        finally:
+            if conn:
+                conn.close()
+        return records

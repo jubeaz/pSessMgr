@@ -49,6 +49,13 @@ poetry run psm computer add-role 10.10.1.1 smb
 poetry run psm computer update -s c 10.10.1.1 
 ```
 
+# scope
+```bash
+poetry run psm scope list
+poetry run psm scope add --excluded 172.16.0.2
+poetry run psm scope add --excluded 172.16.0.2/24
+```
+
 # bd requests
 ```bash
 
