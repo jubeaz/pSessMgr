@@ -19,15 +19,34 @@ rm -rf ~/.psm ; rm -rf titi ; rm -rf /tmp/titi ; poetry run psm session build -p
 
 
 poetry run psm session deactivate titi
-
 ```
+
 ## domain
 ```bash
 poetry run psm domain list
 
 poetry run psm domain add nrunner.local
+poetry run psm domain add research.nrunner.local
 
-poetry run psm domain add -n NRUN -s S-1-5-21-2291914956-3290296217-2402366952 corp.local
+poetry run psm domain update -n NRUN -s S-1-5-21-2291914956-3290296217-2402366952 nrunner.local
+poetry run psm domain target nrunner.local
+poetry run psm domain target research.nrunner.local
+poetry run psm domain activate research.nrunner.local
+poetry run psm domain activate nrunner.local
+poetry run psm domain update -n RESEARCH -s S-1-5-21-2291914956-3290296217-2402366952 research.nrunner.local
+poetry run psm domain update -n RESEARCH -s S-1-5-21-0-0-0 research.nrunner.local
+```
+
+## computer
+```bash
+poetry run psm computer list
+poetry run psm computer add 10.10.1.1
+poetry run psm computer add-fqdn 10.10.1.1 a.fr
+poetry run psm computer add-fqdn 10.10.1.1 b.fr
+poetry run psm computer add-fqdn 10.10.1.1 c.com
+
+poetry run psm computer add-role 10.10.1.1 smb
+poetry run psm computer update -s c 10.10.1.1 
 ```
 
 # bd requests
@@ -37,20 +56,5 @@ sqlite3  -readonly ~/.psm/psm.db 'select * from sessions;'
 sqlite3  -readonly /tmp/titi/.psm_session.db  'select * from domains;'
 
 sqlite3  -readonly /tmp/titi/.psm_session.db  '.fullschema'
-
-
 ```
-
-to do:
-* dans la db il faut enregistrer pour chaque outil l'emplacement du fichier de config sur le fs pour s'assurer que si le template bouge.
-* c'est cette valeur enregistrée qui sera utilisée pour l'activation
-
-au process de creat
-
-# to do
-* A la creation d'une session creer la bd qui va avec.
-
-* A l'activation d'une session s'assurer que la bd est la
-
-* a l'ajout d'un o
 

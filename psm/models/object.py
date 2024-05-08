@@ -1,14 +1,16 @@
 import sqlite3 
-from os.path import exists
-from psm.logger import psm_logger
 from tabulate import tabulate
 import pandas as dp
 from sqlalchemy import create_engine
 from ast import literal_eval
+from os.path import exists
 
+from psm.logger import psm_logger
+from psm.paths import SESSION_DB_NAME
 
-class PSMSessionDB:
+class PSMObjectModel:
     session_db_path = None
+    psm_session = None
 
     def __init__(self, session_db_path):
         self.session_db_path = session_db_path
@@ -47,3 +49,23 @@ class PSMSessionDB:
         finally:
             if conn:
                 conn.close()
+
+    def check_table_exist(self, name):
+        sql = '''SELECT name 
+                FROM sqlite_master 
+                WHERE  name = ?'''
+        try: 
+            conn = sqlite3.connect(self.session_db_path)
+            cur = conn.cursor()
+            cur.execute(sql, [name])
+            record = cur.fetchone()
+        except Exception as e:
+            psm_logger.error(e)
+            raise
+        finally:
+            if conn:
+                conn.close()
+        return record is not None
+
+    def get_table_fkeys(self, name):
+        sql= """PRAGMA foreign_key_list(?)"""

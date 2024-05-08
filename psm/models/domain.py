@@ -6,19 +6,24 @@ import pandas as dp
 #from sqlalchemy import create_engine
 from ast import literal_eval
 
-from psm.psmsessiondb import PSMSessionDB
+from psm.models.object import PSMObjectModel
 #def create_db_engine(db_path):def create_db_engine(db_path):
 #    return create_engine(f"sqlite:///{db_path}", isolation_level="AUTOCOMMIT", future=True)
 
 
-class PSMSessionDomainDB:
-    session_db_path = None
-    psm_session_db = None
+class PSMDomainModel(PSMObjectModel):
+    fqdn = None
+    netbios = None
+    sid = None
+    dc_fqdn = None
+    is_active = None
+    is_target = None
 
     def __init__(self, session_db_path):
-        self.session_db_path = session_db_path
-        self.psm_session_db = PSMSessionDB(session_db_path)
-        self.create_table() 
+        super().__init__(session_db_path)
+        if not self.check_table_exist("domains"):
+            psm_logger.info("Creating Computer table")
+            self.create_table() 
 
         # SELECT name FROM sqlite_master WHERE type='table' AND name='{table_name}';
 
@@ -34,7 +39,7 @@ class PSMSessionDomainDB:
                 "fqdn" text PRIMARY KEY,
                 "netbios" text,
                 "sid" text,
-                "main_dc_fqdn" text, 
+                "dc_fqdn" text, 
                 "is_active" boolean,
                 "is_target" boolean
                 )"""
@@ -48,16 +53,61 @@ class PSMSessionDomainDB:
             if conn:
                 conn.close()
 
+    def create_constraint(self):
+        sql = """PRAGMA foreign_keys=off;
+                BEGIN TRANSACTION;
+                ALTER TABLE domains RENAME TO domains_old;
+                CREATE TABLE if not exists "domains" (
+                    "fqdn" text PRIMARY KEY,
+                    "netbios" text,
+                    "sid" text,
+                    "dc_fqdn" text, 
+                    "is_active" boolean,
+                    "is_target" boolean
+                    FOREIGN KEY (dc_fqdn) REFERENCES Computers(fqdn)
+                );
+                INSERT INTO domains SELECT * FROM domains_old;
+                COMMIT;
+                PRAGMA foreign_keys=on;"""
 
-    def add_domain(self, fqdn, netbios, sid):
-        sql = ''' INSERT INTO domains(fqdn, netbios, sid, is_active, is_target)
-                  VALUES(?, ?, ?, 0, 0) '''
-        if not fqdn:
-            raise RuntimeError("no fqdn provided")
+    def _check(self):
+        if not self.fqdn:
+            raise RuntimeError("Domain fqdn not provided")
+
+    def list_domain(self):
+        self.list_table("domains")
+
+    def get(self):
+        sql = ''' SELECT netbios, sid, dc_fqdn, is_active, is_target FROM domains 
+                  WHERE fqdn = ? '''
+        self._check()
         try: 
             conn = sqlite3.connect(self.session_db_path)
             cur = conn.cursor()
-            cur.execute(sql, [fqdn, netbios, sid])
+            cur.execute(sql, [self.fqdn])
+            record = cur.fetchone()
+            if record is None:
+                psm_logger.error("Domain not found in db")
+                raise RecursionError("Domain not found in db")
+            self.netbios = record[0]
+            self.sid = record[1]
+            self.is_active = record[2]
+            self.is_target = record[3]
+        except sqlite3.Error as e:
+            psm_logger.debug(e)
+            raise
+        finally:
+            if conn:
+                conn.close()
+
+    def add_domain(self):
+        sql = ''' INSERT INTO domains(fqdn, netbios, sid, dc_fqdn, is_active, is_target)
+                  VALUES(?, ?, ?, NULL, 0, 0) '''
+        self._check()
+        try: 
+            conn = sqlite3.connect(self.session_db_path)
+            cur = conn.cursor()
+            cur.execute(sql, [self.fqdn, self.netbios, self.sid])
             conn.commit()
         except Exception as e:
             psm_logger.error(e)
@@ -66,16 +116,15 @@ class PSMSessionDomainDB:
             if conn:
                 conn.close()
 
-    def update_domain(self, fqdn, netbios, sid):
+    def update_domain(self):
         sql = ''' UPDATE domains
-                    SET netbios = ?, sid = ?
+                    SET netbios = ?, sid = ?, dc_fqdn = ?
                   WHERE fqdn = ?'''
-        if not fqdn:
-            raise RuntimeError("no fqdn provided")
+        self._check()
         try: 
             conn = sqlite3.connect(self.session_db_path)
             cur = conn.cursor()
-            cur.execute(sql, [netbios, sid, fqdn])
+            cur.execute(sql, [self.netbios, self.sid, self.dc_fqdn, self.fqdn])
             conn.commit()
         except Exception as e:
             psm_logger.error(e)
@@ -84,20 +133,19 @@ class PSMSessionDomainDB:
             if conn:
                 conn.close()
 
-    def activate_domain(self, fqdn):
+    def activate_domain(self):
         sql_d = ''' UPDATE domains
                     SET is_active = 0'''
         sql_a = ''' UPDATE domains
                     SET is_active = 1
                   WHERE fqdn = ?'''
-        if not fqdn:
-            raise RuntimeError("no fqdn provided")
+        self._check()
         try: 
             conn = sqlite3.connect(self.session_db_path)
             cur = conn.cursor()
             cur.execute(sql_d)
             conn.commit()
-            cur.execute(sql_a, [fqdn])
+            cur.execute(sql_a, [self.fqdn])
             conn.commit()
         except Exception as e:
             psm_logger.error(e)
@@ -106,20 +154,19 @@ class PSMSessionDomainDB:
             if conn:
                 conn.close()
 
-    def target_domain(self, fqdn):
+    def target_domain(self):
         sql_d = ''' UPDATE domains
                     SET is_target = 0'''
         sql_a = ''' UPDATE domains
                     SET is_target = 1
                   WHERE fqdn = ?'''
-        if not fqdn:
-            raise RuntimeError("no fqdn provided")
+        self._check()
         try: 
             conn = sqlite3.connect(self.session_db_path)
             cur = conn.cursor()
             cur.execute(sql_d)
             conn.commit()
-            cur.execute(sql_a, [fqdn])
+            cur.execute(sql_a, [self.fqdn])
             conn.commit()
         except Exception as e:
             psm_logger.error(e)
@@ -128,15 +175,14 @@ class PSMSessionDomainDB:
             if conn:
                 conn.close()
 
-    def delete_domain(self, fqdn):
+    def delete_domain(self):
         sql = ''' DELETE FROM domains
                   WHERE fqdn = ?'''
-        if not fqdn:
-            raise RuntimeError("no fqdn provided")
+        self._check()
         try: 
             conn = sqlite3.connect(self.session_db_path)
             cur = conn.cursor()
-            cur.execute(sql, [fqdn])
+            cur.execute(sql, [self.fqdn])
             conn.commit()
         except Exception as e:
             psm_logger.error(e)
@@ -145,33 +191,19 @@ class PSMSessionDomainDB:
             if conn:
                 conn.close()
 
-
-    def get_domain(self, fqdn):
-        sql = ''' SELECT fqdn, netbios, sid, is_active, is_target FROM domains 
-                  WHERE fqdn = ? '''
-        if not fqdn:
-            raise RuntimeError("no fqdn provided")
+    def unset_dc(self):
+        sql = ''' UPDATE domains
+                    SET dc_fqdn = NULL
+                  WHERE fqdn = ?'''
+        self._check()
         try: 
             conn = sqlite3.connect(self.session_db_path)
             cur = conn.cursor()
-            cur.execute(sql, [fqdn])
-            record = cur.fetchone()
-            fqdn = record[0]
-            netbios = record[1]
-            sid = record[2]
-            is_active = record[3]
-            is_target = record[4]
-        except sqlite3.Error:
-            fqdn = None
-            netbios = None
-            sid = None
-            is_active = None
-            is_target = None
-            psm_logger.debug(f"{name} domain not found in db")
+            cur.execute(sql, [self.fqdn])
+            conn.commit()
+        except Exception as e:
+            psm_logger.error(e)
+            raise
         finally:
             if conn:
                 conn.close()
-        return fqdn, netbios, sid, is_active, is_target
-
-    def list_domain(self):
-        self.psm_session_db.list_table("domains")

@@ -8,8 +8,6 @@ from psm.logger import psm_logger
 from shutil import rmtree, copytree
 from psm.psmdb import PSMDB
 from psm.config import session_template_folders, session_template_symlinks, session_template_tools, psm_config, CONFIG_PATH
-from psm.paths import SESSION_DB_NAME
-from psm.psmsessiondb import PSMSessionDB
 from ast import literal_eval
 
 
@@ -24,7 +22,6 @@ class PSMSession:
         self.tools_dir_paths = []
         if path:
             self.full_path = os.path.join(self.base_dir, self.name)
-            self.session_db_path = os.path.join(self.full_path, SESSION_DB_NAME)
 
     def __str__(self):
         return f"{self.full_path}"
@@ -37,7 +34,6 @@ class PSMSession:
 
     def get(self):
         self.session_id, self.full_path, self.tools, self.tools_dir_paths = self.psm_db.get_session(self.name)
-        self.session_db_path = os.path.join(self.full_path, SESSION_DB_NAME)
 
     def _create_fs(self):
         # create folders
@@ -49,11 +45,6 @@ class PSMSession:
             os.symlink(s[0], os.path.join(self.full_path, s[1]))
         self._copy_tools_data()
         psm_logger.debug("[*] symlinks created")
-        # create session database
-#        self.session_db_path = os.path.join(self.full_path, SESSION_DB_NAME)
-#        psm_session_db = PSMSessionDB(self.session_db_path)
-#        psm_session_db.create_db()
-#        psm_logger.debug(f"[*] Session database created {self.session_db_path}")
         psm_logger.info("[*] session created on filesystem")
 
 
@@ -158,11 +149,6 @@ class PSMSession:
         if self.getactive() != "":
             psm_logger.error(f"[*] session {self.getactive()} is active please deactivate it")
             raise RecursionError("another session is active")
-#        if not os.path.exists(self.session_db_path):
-#            psm_session_db = PSMSessionDB(self.session_db_path)
-#            psm_session_db.create_db()
-#            psm_logger.info(f"[*] Session database created {self.session_db_path}")
-        #psm_logger.debug(f"debug {self.tools_dir_paths}")
         self._activate_tools_isolation()
         # rewrite config
         psm_config.set("psm", "current_session", self.name)

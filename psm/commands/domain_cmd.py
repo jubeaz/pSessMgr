@@ -27,6 +27,7 @@ def update(
     fqdn: Annotated[str, typer.Argument()],
     netbios: Annotated[str, typer.Option("--netbios", "-n", help="netbios name")] = None,
     sid: Annotated[str, typer.Option("--sid", "-s", help="SID")] = None,
+    dc_fqdn: Annotated[str, typer.Option("--dc", "-d", help="DC FQDN")] = None,
     debug: Annotated[LOGLEVEL, typer.Option("--debug", "-d", help="debug mode")] = LOGLEVEL.DEBUG
     ):
     """
@@ -34,8 +35,23 @@ def update(
     """
     set_logging_level(debug)
     domain = PSMDomain(fqdn=fqdn)
-    domain.update(netbios=netbios, sid=sid)
+    domain.update(netbios=netbios, sid=sid, dc_fqdn=dc_fqdn)
     print("[*] Domain updated")
+
+
+@app.command()
+def unset_dc(
+    fqdn: Annotated[str, typer.Argument()],
+    debug: Annotated[LOGLEVEL, typer.Option("--debug", "-d", help="debug mode")] = LOGLEVEL.DEBUG
+    ):
+    """
+    Update a domain
+    """
+    set_logging_level(debug)
+    domain = PSMDomain(fqdn=fqdn)
+    domain.unset_dc()
+    print("[*] Domain updated")
+
 
 @app.command()
 def activate(
@@ -74,7 +90,7 @@ def delete(
     set_logging_level(debug)
     domain = PSMDomain(fqdn=fqdn)
     domain.delete()
-    print("[*] Domain builded")
+    print("[*] Domain deleted")
 
 #@app.command()
 #def set_dc(
@@ -90,10 +106,13 @@ def delete(
 #    domain.set_dc(dc_fqdn)
 #    print("[*] Domain builded")
 
+
+
+
 @app.command()
 def list():
     """
-    List pentest sessions
+    List domains
     """
     set_logging_level(LOGLEVEL.INFO)
     domain = PSMDomain()

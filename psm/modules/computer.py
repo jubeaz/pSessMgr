@@ -1,73 +1,63 @@
 import os
+from ast import literal_eval
+import ipaddress
 from psm.config import current_session
 from psm.modules.session import PSMSession
-from psm.sessiondbmodules.computer import PSMSessionComputerDB
+from psm.models.computer import PSMComputerModel
 from psm.paths import SESSION_DB_NAME
 from psm.logger import psm_logger
-from ast import literal_eval
+
 
 class PSMComputer:
-    fqdn = ""
-    name = None
-    domain_fqdn = None
-    ip = None
-    roles = []
+    psm_model = None
 
-    def __init__(self, fqdn=None):
-        self.fqdn = fqdn
-        if fqdn is not None:
-            self.name, self.domain_fqdn = fqdn.split(".", 1)[:2]
-        self.roles = []
-        self._load_session()
-
-    def _load_session(self):
+    def __init__(self, ip=None):
         self.psm_session = PSMSession()
         self.psm_session.name = current_session
         self.psm_session.get()
         session_db_path = os.path.join(self.psm_session.full_path, SESSION_DB_NAME)
-        self.psm_session_db = PSMSessionComputerDB(session_db_path)
-
-    def get(self):
-        self.fqdn, self.name, self.domain_fqdn, self.ip, self.roles = self.psm_session_db.get_computer(self.fqdn)
-        if self.fqdn is None:
-            psm.logger.error("Computer not found in db")
-            raise RecursionError("Computer not found in db")
+        self.psm_model = PSMComputerModel(session_db_path)
+        if ip is not None:
+            ipaddress.IPv4Address(ip)
+            self.psm_model.ip = ip
 
     def _check(self):
-        if not self.fqdn:
-            raise RuntimeError("no fqdn provided")
-
-    def add(self, ip):
-        self._check()
-        self.ip =ip 
-        self.psm_session_db.add_computer(self.fqdn, self.name, self.domain_fqdn, self.ip, self.roles)
-
-
-    def update(self, ip):
-        self._check()
-        self.get()
-        self.ip =ip 
-        self.psm_session_db.update_computer(self.fqdn, self.ip, self.roles)
-
-    def add_role(self, role):
-        self._check()
-        self.get()
-        if role not in self.roles:
-            self.roles.append(role) 
-            self.psm_session_db.update_computer(self.fqdn, self.ip, self.roles)
-
-    def remove_role(self, role):
-        self._check()
-        self.get()
-        if role in self.roles:
-            self.roles.remove(role) 
-            self.psm_session_db.update_computer(self.fqdn, self.ip, self.roles)
-
-
-    def delete(self):
-        self._check() 
-        self.psm_session_db.delete_computer(self.fqdn)
-
+        if self.psm_model.ip is None:
+            raise RuntimeError("no ip provided")
 
     def list(self):
-        self.psm_session_db.list_computer()
+        self.psm_model.list_computer()
+
+    def add(self, short_name):
+        self._check()
+        self.psm_model.short_name = short_name
+        self.psm_model.add_computer()
+
+    def update(self, short_name):
+        self.psm_model.get()
+        self.psm_model.short_name = short_name
+        self.psm_model.update_computer()
+
+
+    def add_fqdn(self, short):
+        self.psm_model.get()
+        self.psm_model.add_fqdn(fqdn)
+        self.psm_model.update_computer()
+
+    def remove_fqdn(self, fqdn):
+        self.psm_model.get()
+        self.psm_model.remove_fqdn(fqdn)
+        self.psm_model.update_computer()
+
+    def add_role(self, role):
+        self.psm_model.get()
+        self.psm_model.add_role(role)
+        self.psm_model.update_computer()
+
+    def remove_role(self, role):
+        self.psm_model.get()
+        self.psm_model.remove_role(role)
+        self.psm_model.update_computer()
+
+    def delete(self):
+        self.psm_model.delete_computer()
