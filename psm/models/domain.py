@@ -74,8 +74,14 @@ class PSMDomainModel(PSMObjectModel):
         if not self.fqdn:
             raise RuntimeError("Domain fqdn not provided")
 
-    def list_domain(self):
+    def list(self):
         self.list_table("domains")
+
+    def purge(self):
+        self.purge_table("domains")
+
+    def get_domains_dict(self):
+        return self.get_objects_dict("domains")
 
     def get(self):
         sql = ''' SELECT netbios, sid, dc_fqdn, is_active, is_target FROM domains 
@@ -100,7 +106,7 @@ class PSMDomainModel(PSMObjectModel):
             if conn:
                 conn.close()
 
-    def add_domain(self):
+    def add(self):
         sql = ''' INSERT INTO domains(fqdn, netbios, sid, dc_fqdn, is_active, is_target)
                   VALUES(?, ?, ?, NULL, 0, 0) '''
         self._check()
@@ -116,7 +122,7 @@ class PSMDomainModel(PSMObjectModel):
             if conn:
                 conn.close()
 
-    def update_domain(self):
+    def update(self):
         sql = ''' UPDATE domains
                     SET netbios = ?, sid = ?, dc_fqdn = ?
                   WHERE fqdn = ?'''
@@ -133,7 +139,7 @@ class PSMDomainModel(PSMObjectModel):
             if conn:
                 conn.close()
 
-    def activate_domain(self):
+    def activate(self):
         sql_d = ''' UPDATE domains
                     SET is_active = 0'''
         sql_a = ''' UPDATE domains
@@ -154,7 +160,7 @@ class PSMDomainModel(PSMObjectModel):
             if conn:
                 conn.close()
 
-    def target_domain(self):
+    def target(self):
         sql_d = ''' UPDATE domains
                     SET is_target = 0'''
         sql_a = ''' UPDATE domains
@@ -175,7 +181,7 @@ class PSMDomainModel(PSMObjectModel):
             if conn:
                 conn.close()
 
-    def delete_domain(self):
+    def delete(self):
         sql = ''' DELETE FROM domains
                   WHERE fqdn = ?'''
         self._check()

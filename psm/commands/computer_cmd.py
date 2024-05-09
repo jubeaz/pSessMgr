@@ -3,15 +3,10 @@ from typing import Optional
 from typing_extensions import Annotated
 from psm.logger import psm_logger, LOGLEVEL, set_logging_level
 from psm.modules.computer import PSMComputer
-from enum import Enum
+from psm.enums import ComputerRole
 
 
 app = typer.Typer()
-
-class ComputerRole(str, Enum):
-    dc = "dc"
-    smb = "smb"
-    mssql = "mssql"
 
 @app.command()
 def add(
@@ -109,6 +104,18 @@ def delete(
     computer = PSMComputer(ip=ip)
     computer.delete()
     print("[*] Computer deleted")
+
+@app.command()
+def purge(
+    debug: Annotated[LOGLEVEL, typer.Option("--debug", "-d", help="debug mode")] = LOGLEVEL.DEBUG
+    ):
+    """
+    Delete all Computers
+    """
+    set_logging_level(debug)
+    computer = PSMComputer()
+    computer.purge()
+    print("[*] Computers purged")
 
 @app.command()
 def list():

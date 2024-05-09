@@ -50,6 +50,21 @@ class PSMObjectModel:
             if conn:
                 conn.close()
 
+    def purge_table(self, table_name):
+        sql = f"DELETE from {table_name}"
+        try: 
+            conn = sqlite3.connect(self.session_db_path)
+            cur = conn.cursor()
+            cur.execute(sql)
+            conn.commit()
+            psm_logger.debug(f"Executing {sql}")
+        except sqlite3.Error as e:
+            psm_logger.debug(e)
+            raise
+        finally:
+            if conn:
+                conn.close()
+
     def check_table_exist(self, name):
         sql = '''SELECT name 
                 FROM sqlite_master 
@@ -69,3 +84,20 @@ class PSMObjectModel:
 
     def get_table_fkeys(self, name):
         sql= """PRAGMA foreign_key_list(?)"""
+
+
+    def get_objects_dict(self, table_name):
+        sql = f"SELECT * from {table_name}"
+        try: 
+            conn = sqlite3.connect(self.session_db_path)
+            conn.row_factory = sqlite3.Row
+            cur = conn.cursor()
+            cur.execute(sql)
+            records = cur.fetchall()
+        except sqlite3.Error as e:
+            psm_logger.debug(e)
+            raise
+        finally:
+            if conn:
+                conn.close()
+        return records

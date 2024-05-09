@@ -39,21 +39,66 @@ poetry run psm domain update -n RESEARCH -s S-1-5-21-0-0-0 research.nrunner.loca
 
 ## computer
 ```bash
+poetry run psm computer purge
 poetry run psm computer list
-poetry run psm computer add 10.10.1.1
-poetry run psm computer add-fqdn 10.10.1.1 a.fr
-poetry run psm computer add-fqdn 10.10.1.1 b.fr
+poetry run psm computer add 10.10.0.2
+
+poetry run psm computer add 10.10.1.1 
+poetry run psm computer add-fqdn 10.10.1.1 a.fr 
 poetry run psm computer add-fqdn 10.10.1.1 c.com
+poetry run psm computer remove-fqdn 10.10.1.1 c.com
+poetry run psm computer add 10.10.1.2
+poetry run psm computer add-fqdn 10.10.1.2 b.fr
+poetry run psm computer add 10.10.1.3
+poetry run psm computer add-fqdn 10.10.1.3 c.fr
+
+
+poetry run psm computer add 10.10.2.1 
+poetry run psm computer add-fqdn 10.10.2.1 a.x.fr 
+poetry run psm computer add 10.10.2.2
+poetry run psm computer add-fqdn 10.10.2.2 b.x.fr
+poetry run psm computer add 10.10.2.3
+poetry run psm computer add-fqdn 10.10.2.3 c.x.fr
+
+
+
+poetry run psm computer add 10.10.2.2
+
 
 poetry run psm computer add-role 10.10.1.1 smb
 poetry run psm computer update -s c 10.10.1.1 
 ```
 
 # scope
+
 ```bash
+# test overlapping
+poetry run psm scope add 172.16.1.0/24
+poetry run psm scope add 172.16.2.0/24
+poetry run psm scope add 172.16.3.0/24
+poetry run psm scope add 172.16.4.0/24
+poetry run psm scope add 172.16.0.0/16
+poetry run psm scope add 10.0.8.0/24
+poetry run psm scope add 10.0.0.0/8
+poetry run psm scope add 10.1.0.0/16
+poetry run psm scope add 10.1.8.0/24
+
+
+
+# real
 poetry run psm scope list
-poetry run psm scope add --excluded 172.16.0.2
-poetry run psm scope add --excluded 172.16.0.2/24
+poetry run psm scope add --action block 10.10.2.0/24
+poetry run psm scope add --action block 10.10.0.0/16
+poetry run psm scope add --action block 10.10.1.1
+
+
+# onliner
+poetry run psm scope add --excluded 172.16.0.2 ; poetry run psm scope add 172.16.1.0/24 ;poetry run psm scope add --excluded 172.16.2.0/24 ; poetry run psm scope list
+```
+
+# exporter
+```bash
+poetry run psm generator export-etc-hosts
 ```
 
 # bd requests

@@ -28,31 +28,34 @@ class PSMDomain:
             raise RuntimeError("no fqdn provided")
 
     def list(self):
-        self.psm_model.list_domain()
+        self.psm_model.list()
+
+    def purge(self):
+        self.psm_model.purge()
 
     def add(self, netbios=None, sid=None):
         self._check()
         self.psm_model.netbios = netbios 
         self.psm_model.sid = sid 
-        self.psm_model.add_domain()
+        self.psm_model.add()
 
     def update(self, netbios=None, sid=None, dc_fqdn=None):
         self.psm_model.get()
         self.psm_model.netbios = netbios if netbios is not None else self.psm_model.netbios
         self.psm_model.sid = sid if sid is not None else self.psm_model.sid
         self.psm_model.dc_fqdn = dc_fqdn if dc_fqdn is not None else self.psm_model.dc_fqdn
-        self.psm_model.update_domain()
+        self.psm_model.update()
 
     def activate(self):
         self.psm_model.get()
-        self.psm_model.activate_domain()
+        self.psm_model.activate()
 
     def target(self):
         self.psm_model.get()
-        self.psm_model.target_domain()
+        self.psm_model.target()
 
     def unset_dc(self):
         self.psm_model.unset_dc()
 
     def delete(self):
-        self.psm_model.delete_domain()
+        self.psm_model.delete()

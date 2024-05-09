@@ -9,6 +9,7 @@ import ipaddress
 
 from psm.logger import psm_logger
 from psm.models.object import PSMObjectModel
+from psm.enums import FilterType
 
 #def create_db_engine(db_path):def create_db_engine(db_path):
 #    return create_engine(f"sqlite:///{db_path}", isolation_level="AUTOCOMMIT", future=True)
@@ -17,7 +18,7 @@ from psm.models.object import PSMObjectModel
 class PSMScopeModel(PSMObjectModel):
 # psm_session_db
     scope = None
-    is_excluded = False
+    _allow = True
 
     def __init__(self, session_db_path):
         super().__init__(session_db_path)
@@ -36,7 +37,7 @@ class PSMScopeModel(PSMObjectModel):
             c.execute(
                 """CREATE TABLE if not exists "scopes" (
                 "scope" text PRIMARY KEY,
-                "is_excluded" boolean
+                "allow" boolean
                 )"""
             )
             # commit the changes and close everything off
@@ -49,7 +50,55 @@ class PSMScopeModel(PSMObjectModel):
             if conn:
                 conn.close()
 
-    def _check(self):
+    def set_filter_type(self, filter_type):
+        self._allow = (filter_type.value == FilterType.allow.value) 
+
+    def get_filter_type(self):
+        if self._allow is True:
+            return FilterType.allow
+        return FilterType.block
+
+    def get_default_scoping_action(self):
+        scoping_action = self.get_defined_scoping_action()
+        if scoping_action is None or scoping_action.value == FilterType.block.value:
+            return  FilterType.allow
+        return FilterType.block
+
+    def get_defined_scoping_action(self):
+        sql = "SELECT allow FROM scopes"
+        action = None
+        try: 
+            conn = sqlite3.connect(self.session_db_path)
+            cur = conn.cursor()
+            cur.execute(sql)
+            record = cur.fetchone()
+            if record is None:
+                action = None
+            elif record[0]:
+                action = FilterType.allow
+            else: 
+                action = FilterType.block
+        except sqlite3.Error as e:
+            psm_logger.debug(e)
+            raise
+        finally:
+            if conn:
+                conn.close()            
+        return action
+
+    def _check_inclusion_and_types(self):
+        existing_scope = self.get_scopes_dict()
+        for e in existing_scope:
+            if ipaddress.IPv4Network(self.scope).overlaps(ipaddress.IPv4Network(e["scope"])):
+                psm_logger.debug(f"{self.scope} overlaps with {e["scope"]}")
+                raise RuntimeError("Overlaping scopes")
+        if self.get_defined_scoping_action() is not None:
+            if self.get_filter_type().value != self.get_defined_scoping_action().value:
+                psm_logger.debug(f"{self.scope} allow {self._allow} whereas {e["scope"]} allow {e["allow"]}")
+                raise RuntimeError("Scope types mixing")
+
+
+    def _check_datatype(self):
         if self.scope is None:
             raise RuntimeError("No Scope not provided")
         # either IP or network
@@ -66,18 +115,27 @@ class PSMScopeModel(PSMObjectModel):
                 psm_logger.error(f"{self.scope} is not an IPv4 network address")
                 raise RuntimeError("Network address not compatible")
 
+    def _check(self):
+        self._check_datatype()
+        self._check_inclusion_and_types()
 
     def list(self):
         self.list_table("scopes")
 
+    def purge(self):
+        self.purge_table("scopes")
+
+    def get_scopes_dict(self):
+        return self.get_objects_dict("scopes")
+
     def add(self):
-        sql = ''' INSERT INTO scopes(scope, is_excluded)
+        sql = ''' INSERT INTO scopes(scope, allow)
                   VALUES(?, ?)'''
         self._check()
         try: 
             conn = sqlite3.connect(self.session_db_path)
             cur = conn.cursor()
-            cur.execute(sql, [self.scope, self.is_excluded])
+            cur.execute(sql, [self.scope, self._allow])
             conn.commit()
         except Exception as e:
             psm_logger.error(e)
@@ -102,19 +160,3 @@ class PSMScopeModel(PSMObjectModel):
             if conn:
                 conn.close()
 
-    def get_scopes(self):
-        sql = ''' SELECT * from scopes'''
-        try: 
-            conn = sqlite3.connect(self.session_db_path)
-            conn.row_factory = sqlite3.Row
-            cur = conn.cursor()
-            cur.execute(sql)
-            records = cur.fetchall()
-
-        except sqlite3.Error as e:
-            psm_logger.debug(e)
-            raise
-        finally:
-            if conn:
-                conn.close()
-        return records

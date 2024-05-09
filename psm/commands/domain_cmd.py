@@ -107,6 +107,18 @@ def delete(
 #    print("[*] Domain builded")
 
 
+@app.command()
+def purge(
+    debug: Annotated[LOGLEVEL, typer.Option("--debug", "-d", help="debug mode")] = LOGLEVEL.DEBUG
+    ):
+    """
+    Delete all Domains
+    """
+    set_logging_level(debug)
+    domain = PSMDomain()
+    domain.purge()
+    print("[*] Domain purged")
+
 
 
 @app.command()

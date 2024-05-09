@@ -23,46 +23,54 @@ class PSMComputer:
         if self.psm_model.ip is None:
             raise RuntimeError("no ip provided")
 
+    def purge(self):
+        self.psm_model.purge()
+
     def list(self):
-        self.psm_model.list_computer()
+        self.psm_model.list()
 
     def add(self, short_name):
         self._check()
         self.psm_model.short_name = short_name
-        self.psm_model.add_computer()
+        self.psm_model.add()
 
     def update(self, short_name):
         self.psm_model.get()
         self.psm_model.short_name = short_name
-        self.psm_model.update_computer()
+        self.psm_model.update()
 
 
     def add_fqdn(self, fqdn):
         self.psm_model.get()
         self.psm_model.add_fqdn(fqdn)
-        self.psm_model.update_computer()
+        self.psm_model.update()
 
     def remove_fqdn(self, fqdn):
         self.psm_model.get()
         self.psm_model.remove_fqdn(fqdn)
-        self.psm_model.update_computer()
+        self.psm_model.update()
 
     def add_role(self, role):
         self.psm_model.get()
         self.psm_model.add_role(role)
-        self.psm_model.update_computer()
+        self.psm_model.update()
 
     def remove_role(self, role):
         self.psm_model.get()
         self.psm_model.remove_role(role)
-        self.psm_model.update_computer()
+        self.psm_model.update()
 
-    def export_etc_hosts(self):
-        res = self.psm_model.get_computers()
-        for r in res:
-            ip = r["ip"]
-            fqdns = literal_eval(r["fqdns"])
-            print(f"{ip} {', '.join(fqdns)}")
+    def get_computers_dict(self):
+        result = {}
+        tmp = self.psm_model.get_computers_dict()
+        for t in tmp:
+            v = {}
+            if t["fqdns"] is None:
+                v["fqdns"] = []
+            else:     
+                v["fqdns"] = literal_eval(t["fqdns"])
+            result[t["ip"]] = v
+        return result
 
     def delete(self):
         self.psm_model.delete_computer()

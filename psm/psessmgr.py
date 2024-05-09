@@ -1,5 +1,5 @@
 import typer
-from psm.commands import session_cmd, domain_cmd, computer_cmd, scope_cmd
+from psm.commands import session_cmd, domain_cmd, computer_cmd, scope_cmd, generator_cmd
 from psm.scripts.banner import small_banner, show_banner
 from psm.logger import psm_logger, set_logging_level, DEFAULT_LOG_LEVEL
 from psm.console import psm_console
@@ -48,7 +48,11 @@ app.add_typer(
     help="Manage scopes within a session"
 )
 
-
+app.add_typer(
+    generator_cmd.app,
+    name="generator",
+    help="Generate files"
+)
 
 def main():
     set_logging_level(DEFAULT_LOG_LEVEL)

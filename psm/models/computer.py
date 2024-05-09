@@ -105,10 +105,14 @@ class PSMComputerModel(PSMObjectModel):
                 psm_logger.error(f"{self.ip} is not an IPv4 address")
                 raise RuntimeError("IP not compatible")
 
+    def get_computers_dict(self):
+        return self.get_objects_dict("computers")
 
-
-    def list_computer(self):
+    def list(self):
         self.list_table("computers")
+
+    def purge(self):
+        self.purge_table("computers")
 
     def get(self):
         sql = ''' SELECT fqdns, short_name, domain_fqdns, roles FROM computers 
@@ -136,7 +140,7 @@ class PSMComputerModel(PSMObjectModel):
             if conn:
                 conn.close()
 
-    def add_computer(self):
+    def add(self):
         sql = ''' INSERT INTO computers(ip, fqdns, short_name, domain_fqdns, roles)
                   VALUES(?, NULL, ?, NULL, NULL)'''
         self._check()
@@ -152,7 +156,7 @@ class PSMComputerModel(PSMObjectModel):
             if conn:
                 conn.close()
 
-    def update_computer(self):
+    def update(self):
         sql = ''' UPDATE computers
                     SET short_name = ?, fqdns = ?, roles = ?, domain_fqdns = ?
                   WHERE ip = ?'''
@@ -169,7 +173,7 @@ class PSMComputerModel(PSMObjectModel):
             if conn:
                 conn.close()
 
-    def delete_computer(self):
+    def delete(self):
         sql = ''' DELETE FROM computers
                   WHERE fqdn = ?'''
         self._check()
@@ -184,20 +188,3 @@ class PSMComputerModel(PSMObjectModel):
         finally:
             if conn:
                 conn.close()
-
-    def get_computers(self):
-        sql = ''' SELECT * from computers'''
-        try: 
-            conn = sqlite3.connect(self.session_db_path)
-            conn.row_factory = sqlite3.Row
-            cur = conn.cursor()
-            cur.execute(sql)
-            records = cur.fetchall()
-
-        except sqlite3.Error as e:
-            psm_logger.debug(e)
-            raise
-        finally:
-            if conn:
-                conn.close()
-        return records
