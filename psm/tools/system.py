@@ -4,10 +4,11 @@ from psm.logger import psm_logger
 
 
 class PSMTool():
-    name = 'nxc'
-    #isolation_paths = [".nxc"]
-    isolation_paths = ["~/.nxc-psm"]
-    user_config_path = '.nxc'
+    name = 'system'
+    #isolation_paths = ["/etc/hosts"]
+    isolation_paths = ["/etc/hosts-psm", "/etc/krb5.conf"]
+    user_data_path = ''
+    user_config_path = None
 
     def get_isolation_paths_old(self):
         return self.isolation_paths
@@ -26,4 +27,6 @@ class PSMTool():
                 e["src"] = os.path.expanduser(src)
             p.append(e)
         psm_logger.debug(p)
+        psm_logger.info("Remember to perform a 'sudo -E chown --recursive <user>:<group> ~/.psm")
+        psm_logger.info(f"Remember to perform a 'sudo -E chown --recursive <user>:<group> {dst}")
         return p

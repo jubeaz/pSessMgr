@@ -47,26 +47,24 @@ class PSMSession:
         psm_logger.debug("[*] symlinks created")
         psm_logger.info("[*] session created on filesystem")
 
-
     def _copy_tool_data(self, tool_ame):
         psm_logger.debug(f"[*] processing {tool_ame} tool")
         m = psm_toolloader.load_tool(tool_ame)
         psm_tool = m.PSMTool()
-        paths = psm_tool.get_isolation_paths()
-        for path in paths:
-            src = os.path.join(os.path.expanduser('~'), path)
-            dst = os.path.join(self.full_path, os.path.dirname(path))
-            psm_logger.debug(f"mkdir {dst}")
-            os.makedirs(dst, exist_ok=True)
-            dst = os.path.join(self.full_path, path)
-            psm_logger.debug(f"{dst} is file {os.path.isfile(path)}")
+        paths_i = psm_tool.get_isolation_paths(self.full_path)
+        for path_i in paths_i:
+            src =path_i["src"]
+            dst = path_i["dst"]
+            psm_logger.debug(f"mkdir {os.path.dirname(dst)}")
+            os.makedirs(os.path.dirname(dst), exist_ok=True)
+            psm_logger.debug(f"{src} is file {os.path.isfile(src)}")
             if os.path.isdir(src):
                 psm_logger.debug(f"copy tree {src} to {dst}")
                 copytree(src, dst)
             else: 
                 psm_logger.debug(f"copy file {src} to {dst}")
                 shutil.copy(src, dst)
-            self.tools_dir_paths.append(path)
+            self.tools_dir_paths.append(path_i)
 
     def _copy_tools_data(self):
         tools = psm_toolloader.get_tools(session_template_tools)
@@ -121,19 +119,17 @@ class PSMSession:
         psm_logger.debug(f"[*] {self.full_path} destroyed")
 
 
-    def _isolate_tool(self, path):
-        src = os.path.join(os.path.expanduser('~'), path)
-        dst = os.path.join(self.full_path, path)
+    def _isolate_tool(self, path_i):
         # rename 
-        psm_logger.debug(f"renaming {src} to {dst}.psm_save")
-        os.rename(src, f"{src}.psm_save")
+        psm_logger.debug(f"renaming {path_i["src"]} to {path_i["src"]}.psm_save")
+        os.rename(path_i["src"], f"{path_i["src"]}.psm_save")
         # create symlink
-        psm_logger.debug(f"creating symlink {dst} => {src}")
-        os.symlink(dst, src)
+        psm_logger.debug(f"creating symlink {path_i["dst"]} => {path_i["src"]}")
+        os.symlink(path_i["ds"], path_i["src"])
 
     def _activate_tools_isolation(self):
-        for path in self.tools_dir_paths:
-            self._isolate_tool(path)
+        for path_i in self.tools_dir_paths:
+            self._isolate_tool(path_i)
 
 
     def activate(self):
@@ -142,28 +138,29 @@ class PSMSession:
         self.get()
         if self.session_id == -1:
             psm.logger.error(f"Session {name} not found in db")
-            raise RecursionError("Session not found in db")
+            raise RuntimeError("Session not found in db")
         if self.isactive():
             psm_logger.info(f"[*] session {self.name} already active")
             return 
         if self.getactive() != "":
             psm_logger.error(f"[*] session {self.getactive()} is active please deactivate it")
-            raise RecursionError("another session is active")
+            raise RuntimeError("another session is active")
         self._activate_tools_isolation()
         # rewrite config
         psm_config.set("psm", "current_session", self.name)
         with open(CONFIG_PATH, "w") as configfile:
             psm_config.write(configfile)
 
-    def _unisolate_tool(self, p):
-        src = os.path.join(os.path.expanduser('~'), p)
-        dst = os.path.join(self.full_path, p)
+    def _unisolate_tool(self, path_i):
+        src = path_i["src"]
+        dst = path_i["dst"]
         # remove symlink
         psm_logger.debug(f"removing symlink {src}")
         os.remove(src)
         # rename 
         psm_logger.debug(f"renaming {dst}.psm_save to {src}")
         os.rename(f"{src}.psm_save", src)
+
 
     def _deactivate_tools_isolation(self):
         for p in self.tools_dir_paths:
@@ -173,7 +170,7 @@ class PSMSession:
         self.get()
         if self.session_id == -1:
             psm.logger.error("Session not found in db")
-            raise RecursionError("Session not found in db")
+            raise RuntimeError("Session not found in db")
         if not self.isactive():
             psm_logger.info(f"[*] session {self.name} is not active")
             return 
@@ -192,7 +189,7 @@ class PSMSession:
         self.get()
         if self.session_id == -1:
             psm.logger.error("Session not found in db")
-            raise RecursionError("Session not found in db")
+            raise RuntimeError("Session not found in db")
         if tool_name in self.tools:
             psm_logger.error(f"[*] {tool_name} already isolated in session")
             raise RuntimeError("Already isolated tool")

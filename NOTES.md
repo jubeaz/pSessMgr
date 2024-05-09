@@ -1,6 +1,8 @@
 # commands to test
 
 ## session
+
+### regular (without system files)
 ```bash
 cp -r ~/documents/pentesting-games/prolabs/nrunner/evidence/logging/nxc ~/.nxc-psm ; cp ~/.arsenal.json ~/.arsenal.json-psm ; cp -r ~/documents/pentesting-games/prolabs/nrunner/evidence/logging/sqlmap/ ~/.local/share/sqlmap-psm
 
@@ -19,6 +21,11 @@ rm -rf ~/.psm ; rm -rf titi ; rm -rf /tmp/titi ; poetry run psm session build -p
 
 
 poetry run psm session deactivate titi
+```
+
+### with system file
+```bash
+sudo -E rm  -rf ~/.psm ; sudo -E  rm -rf titi ; sudo  -E rm -rf  /tmp/titi ; poetry run sudo -E psm session build -p /tmp titi  ; poetry run sudo -E  psm session activate titi
 ```
 
 ## domain
