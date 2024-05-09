@@ -61,12 +61,11 @@ poetry run psm computer add 10.10.2.3
 poetry run psm computer add-fqdn 10.10.2.3 c.x.fr
 
 
-
-poetry run psm computer add 10.10.2.2
-
-
 poetry run psm computer add-role 10.10.1.1 smb
-poetry run psm computer update -s c 10.10.1.1 
+poetry run psm computer add-role 10.10.1.1 dc
+poetry run psm computer add-role 10.10.1.1 mssql
+poetry run psm computer remove-role 10.10.1.1 mssql
+poetry run psm computer update -s dc01 10.10.1.1 
 ```
 
 # scope
@@ -86,14 +85,14 @@ poetry run psm scope add 10.1.8.0/24
 
 
 # real
+poetry run psm scope purge
 poetry run psm scope list
 poetry run psm scope add --action block 10.10.2.0/24
 poetry run psm scope add --action block 10.10.0.0/16
 poetry run psm scope add --action block 10.10.1.1
 
 
-# onliner
-poetry run psm scope add --excluded 172.16.0.2 ; poetry run psm scope add 172.16.1.0/24 ;poetry run psm scope add --excluded 172.16.2.0/24 ; poetry run psm scope list
+poetry run psm scope add  10.10.2.0/24
 ```
 
 # exporter

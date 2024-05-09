@@ -70,7 +70,7 @@ class PSMScope:
 
     def filter_computer_dict(self, computers):
         default_scoping_action = self.psm_model.get_default_scoping_action()
-        print(default_scoping_action)
+        psm_logger.debug(f"Default scoping action {default_scoping_action}")
         if default_scoping_action.value  == FilterType.allow.value:
             return self.allow_filter_computer_dict(computers)
         return self.block_filter_computer_dict(computers)
