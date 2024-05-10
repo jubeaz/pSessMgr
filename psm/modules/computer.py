@@ -84,15 +84,12 @@ class PSMComputer:
 
     def nmap_import(self, file_path=None, dry_run=False, store_details=False):
         r = NmapParser.parse_fromfile(file_path)
-
-        print(f'store_details is {store_details}')
         if store_details:
             self.psm_scan_model.timestamp = r.started
             self.psm_scan_model.file_path = file_path
             self.psm_scan_model.cmdline = r.commandline
             self.psm_scandetail_model.scan_id = r.started
             psm_logger.info("Creating scan")
-            print(f'store_details is {store_details}')
             self.psm_scan_model.add(dry_run)
         for host in r.hosts:
             if host.is_up():
@@ -102,7 +99,7 @@ class PSMComputer:
                 try:
                     self.psm_model.get()
                 except:
-                    psm_logger.info(f"New host found {host.ipv4}")
+                    psm_logger.debug(f"New host found {host.ipv4}")
                     new = True
                 if new is True:
                     psm_logger.info(f"Adding {host.ipv4}")
@@ -124,7 +121,7 @@ class PSMComputer:
                     if s.state == "open":
                         s_dict = {}
                         s_dict[f"{s.port}/{s.protocol}"] =  s.service
-                        psm_logger.info(f"Adding service {s_dict} to {host.ipv4}")
+                        psm_logger.debug(f"Adding service {s_dict} to {host.ipv4}")
                         self.psm_model.add_service(s_dict, dry_run)
                         self.psm_model.update(dry_run)
 

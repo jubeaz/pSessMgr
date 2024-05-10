@@ -145,7 +145,7 @@ def import_nmap(
     """
     import computers from nmap
     """
-    set_logging_level(LOGLEVEL.INFO)
+    set_logging_level(debug)
     computer = PSMComputer()
     computer.nmap_import(file_path=file, dry_run=dry_run, store_details=store_details)
 
