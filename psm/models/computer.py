@@ -21,6 +21,7 @@ class PSMComputerModel(PSMObjectModel):
     short_name = None
     domain_fqdns = []
     roles = []
+    services = []
 
     def __init__(self, session_db_path):
         super().__init__(session_db_path)
@@ -42,7 +43,8 @@ class PSMComputerModel(PSMObjectModel):
                 "fqdns" text,
                 "short_name" text,
                 "domain_fqdns" text,
-                "roles" text
+                "roles" text,
+                "services" text
                 )"""
             )
             # commit the changes and close everything off
@@ -57,7 +59,10 @@ class PSMComputerModel(PSMObjectModel):
 
 
 
-    def add_fqdn(self, fqdn):
+    def add_fqdn(self, fqdn, dry_run=False):
+        if dry_run is True:
+            psm_logger.info("Adding FQDN dry runned")
+            return
         if fqdn is None:
             raise RuntimeError("No FQDN")
         f = FQDN(fqdn)
@@ -95,6 +100,17 @@ class PSMComputerModel(PSMObjectModel):
         if role in self.roles:
             self.roles.remove(role)
 
+    def add_service(self, service, dry_run=False):
+        if dry_run is True:
+            psm_logger.info("Adding Service dry runned")
+            return        
+        if service not in self.services:
+            self.services.append(service)
+
+    def remove_service(self, service):
+        if service in self.services:
+            self.services.remove(service)
+
     def _check(self):
         if self.ip is None:
             raise RuntimeError("Computer IP not provided")
@@ -115,7 +131,7 @@ class PSMComputerModel(PSMObjectModel):
         self.purge_table("computers")
 
     def get(self):
-        sql = ''' SELECT fqdns, short_name, domain_fqdns, roles FROM computers 
+        sql = ''' SELECT fqdns, short_name, domain_fqdns, roles, services FROM computers 
                   WHERE ip = ? '''
         self._check()
         try: 
@@ -125,7 +141,7 @@ class PSMComputerModel(PSMObjectModel):
             record = cur.fetchone()
             if record is None:
                 psm_logger.error("Computer not found in db")
-                raise RecursionError("Computer not found in db")
+                raise RuntimeError("Computer not found in db")
             if record[0] is not None:
                 self.fqdns = literal_eval(record[0])
             self.short_name = record[1]
@@ -133,6 +149,8 @@ class PSMComputerModel(PSMObjectModel):
                 self.domain_fqdns = literal_eval(record[2])
             if record[3] is not None:
                 self.roles = literal_eval(record[3])
+            if record[4] is not None:
+                self.services = literal_eval(record[4])
         except sqlite3.Error as e:
             psm_logger.debug(e)
             raise
@@ -140,9 +158,12 @@ class PSMComputerModel(PSMObjectModel):
             if conn:
                 conn.close()
 
-    def add(self):
-        sql = ''' INSERT INTO computers(ip, fqdns, short_name, domain_fqdns, roles)
-                  VALUES(?, NULL, ?, NULL, NULL)'''
+    def add(self, dry_run=False):
+        sql = ''' INSERT INTO computers(ip, fqdns, short_name, domain_fqdns, roles, services)
+                  VALUES(?, NULL, ?, NULL, NULL, NULL)'''
+        if dry_run is True:
+            psm_logger.info("Creating computer dry runned")
+            return
         self._check()
         try: 
             conn = sqlite3.connect(self.session_db_path)
@@ -156,15 +177,18 @@ class PSMComputerModel(PSMObjectModel):
             if conn:
                 conn.close()
 
-    def update(self):
+    def update(self, dry_run=False):
         sql = ''' UPDATE computers
-                    SET short_name = ?, fqdns = ?, roles = ?, domain_fqdns = ?
+                    SET short_name = ?, fqdns = ?, roles = ?, domain_fqdns = ?, services = ?
                   WHERE ip = ?'''
+        if dry_run is True:
+            psm_logger.info("Updating computer dry runned")
+            return
         self._check()
         try: 
             conn = sqlite3.connect(self.session_db_path)
             cur = conn.cursor()
-            cur.execute(sql, [self.short_name, repr(self.fqdns), repr(self.roles), repr(self.domain_fqdns), self.ip])
+            cur.execute(sql, [self.short_name, repr(self.fqdns), repr(self.roles), repr(self.domain_fqdns), repr(self.services), self.ip])
             conn.commit()
         except Exception as e:
             psm_logger.error(e)

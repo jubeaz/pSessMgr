@@ -22,7 +22,7 @@ class PSMDomainModel(PSMObjectModel):
     def __init__(self, session_db_path):
         super().__init__(session_db_path)
         if not self.check_table_exist("domains"):
-            psm_logger.info("Creating Computer table")
+            psm_logger.info("Creating Domain table")
             self.create_table() 
 
         # SELECT name FROM sqlite_master WHERE type='table' AND name='{table_name}';
@@ -94,7 +94,7 @@ class PSMDomainModel(PSMObjectModel):
             record = cur.fetchone()
             if record is None:
                 psm_logger.error("Domain not found in db")
-                raise RecursionError("Domain not found in db")
+                raise RuntimeError("Domain not found in db")
             self.netbios = record[0]
             self.sid = record[1]
             self.is_active = record[2]

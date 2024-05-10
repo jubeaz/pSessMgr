@@ -84,6 +84,7 @@ class PSMObjectModel:
 
     def get_table_fkeys(self, name):
         sql= """PRAGMA foreign_key_list(?)"""
+        raise RuntimeError("todo")
 
 
     def get_objects_dict(self, table_name):

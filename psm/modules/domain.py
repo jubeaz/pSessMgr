@@ -21,7 +21,7 @@ class PSMDomain:
 #        self.fqdn, self.netbios, self.sid, self.is_active, self.is_target = self.psm_model.get_domain(self.fqdn)
 #        if self.fqdn is None:
 #            psm.logger.error("Domain not found in db")
-#            raise RecursionError("Domain not found in db")
+#            raise RuntimeError("Domain not found in db")
 
     def _check(self):
         if self.psm_model.fqdn is None:

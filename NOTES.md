@@ -45,6 +45,8 @@ poetry run psm domain update -n RESEARCH -s S-1-5-21-0-0-0 research.nrunner.loca
 ```
 
 ## computer
+https://libnmap.readthedocs.io/en/latest/index.html#
+
 ```bash
 poetry run psm computer purge
 poetry run psm computer list
@@ -73,6 +75,12 @@ poetry run psm computer add-role 10.10.1.1 dc
 poetry run psm computer add-role 10.10.1.1 mssql
 poetry run psm computer remove-role 10.10.1.1 mssql
 poetry run psm computer update -s dc01 10.10.1.1 
+
+poetry run psm computer import-nmap  ./tests/files/nmap_fullscan.xml
+poetry run psm computer import-nmap  ./tests/files/nmap.xml
+poetry run psm computer purge
+poetry run psm computer list
+
 ```
 
 # scope

@@ -286,6 +286,19 @@ files = [
 six = ">=1.5"
 
 [[package]]
+name = "python-libnmap"
+version = "0.7.3"
+description = "Python NMAP library enabling you to start async nmap tasks, parse and compare/diff scan results"
+optional = false
+python-versions = "*"
+files = [
+    {file = "python-libnmap-0.7.3.tar.gz", hash = "sha256:d03629256c2ee9ab37390c28d4c4c2ae9637cd0861dd8ab9e0f32779545936c0"},
+]
+
+[package.extras]
+defusedxml = ["defusedxml (>=0.6.0)"]
+
+[[package]]
 name = "pytz"
 version = "2024.1"
 description = "World timezone definitions, modern and historical"
@@ -479,4 +492,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "17976b6b2b96966e9226df823a780340e42ee719a92f01e198d262eb63d4bf7e"
+content-hash = "3a23f5d377b37236bc0a1de318375e0137e9dbf413052797bbfc1b94e09ebce8"

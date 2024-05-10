@@ -4,6 +4,7 @@ from typing_extensions import Annotated
 from psm.logger import psm_logger, LOGLEVEL, set_logging_level
 from psm.modules.computer import PSMComputer
 from psm.enums import ComputerRole
+from pathlib import Path
 
 
 app = typer.Typer()
@@ -125,6 +126,28 @@ def list():
     set_logging_level(LOGLEVEL.INFO)
     computer = PSMComputer()
     computer.list()
+
+@app.command()
+def import_nmap(
+    file: Annotated[
+        Path, 
+        typer.Argument(
+            exists=True,
+            writable=True,
+            readable=True,
+            help="namp xml output file"
+        )
+    ],
+    dry_run: Annotated[bool, typer.Option("--dry-run", help="dry_run mode")] = False,
+    store_details: Annotated[bool, typer.Option("--store-details", "-s", help="import scan details")] = False,
+    debug: Annotated[LOGLEVEL, typer.Option("--debug", "-d", help="debug mode")] = LOGLEVEL.DEBUG
+    ):
+    """
+    import computers from nmap
+    """
+    set_logging_level(LOGLEVEL.INFO)
+    computer = PSMComputer()
+    computer.nmap_import(file_path=file, dry_run=dry_run, store_details=store_details)
 
 if __name__ == "__main__":
     app()
