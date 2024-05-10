@@ -124,6 +124,27 @@ class PSMComputerModel(PSMObjectModel):
     def get_computers_dict(self):
         return self.get_objects_dict("computers")
 
+
+    def get_computers_ip_fqdns(self):
+        if self.check_table_exist('domains'):
+            sql = f"select ip, fqdns, fqdn as computed_fqdn from computers as c left join domains as d on d.dc_ip == c.ip where c.fqdns != '[]'"
+        else:
+            sql = f"SELECT ip, fqdns, NULL as computed_fqdn from computers where fqdns != '[]'"
+        try: 
+            conn = sqlite3.connect(self.session_db_path)
+            conn.row_factory = sqlite3.Row
+            cur = conn.cursor()
+            cur.execute(sql)
+            records = cur.fetchall()
+        except sqlite3.Error as e:
+            psm_logger.debug(e)
+            raise
+        finally:
+            if conn:
+                conn.close()
+        return records
+
+
     def list(self):
         self.list_table("computers")
 

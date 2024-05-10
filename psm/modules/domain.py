@@ -39,11 +39,11 @@ class PSMDomain:
         self.psm_model.sid = sid 
         self.psm_model.add()
 
-    def update(self, netbios=None, sid=None, dc_fqdn=None):
+    def update(self, netbios=None, sid=None, dc_ip=None):
         self.psm_model.get()
         self.psm_model.netbios = netbios if netbios is not None else self.psm_model.netbios
         self.psm_model.sid = sid if sid is not None else self.psm_model.sid
-        self.psm_model.dc_fqdn = dc_fqdn if dc_fqdn is not None else self.psm_model.dc_fqdn
+        self.psm_model.dc_ip = dc_ip if dc_ip is not None else self.psm_model.dc_ip
         self.psm_model.update()
 
     def activate(self):

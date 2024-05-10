@@ -27,7 +27,7 @@ def update(
     fqdn: Annotated[str, typer.Argument()],
     netbios: Annotated[str, typer.Option("--netbios", "-n", help="netbios name")] = None,
     sid: Annotated[str, typer.Option("--sid", "-s", help="SID")] = None,
-    dc_fqdn: Annotated[str, typer.Option("--dc", "-d", help="DC FQDN")] = None,
+    dc_ip: Annotated[str, typer.Option("--dc", help="DC IP")] = None,
     debug: Annotated[LOGLEVEL, typer.Option("--debug", "-d", help="debug mode")] = LOGLEVEL.DEBUG
     ):
     """
@@ -35,7 +35,7 @@ def update(
     """
     set_logging_level(debug)
     domain = PSMDomain(fqdn=fqdn)
-    domain.update(netbios=netbios, sid=sid, dc_fqdn=dc_fqdn)
+    domain.update(netbios=netbios, sid=sid, dc_ip=dc_ip)
     print("[*] Domain updated")
 
 

@@ -5,6 +5,8 @@ from tabulate import tabulate
 import pandas as dp
 #from sqlalchemy import create_engine
 from ast import literal_eval
+from fqdn import FQDN
+import ipaddress
 
 from psm.models.object import PSMObjectModel
 #def create_db_engine(db_path):def create_db_engine(db_path):
@@ -15,7 +17,7 @@ class PSMDomainModel(PSMObjectModel):
     fqdn = None
     netbios = None
     sid = None
-    dc_fqdn = None
+    dc_ip = None
     is_active = None
     is_target = None
 
@@ -39,7 +41,7 @@ class PSMDomainModel(PSMObjectModel):
                 "fqdn" text PRIMARY KEY,
                 "netbios" text,
                 "sid" text,
-                "dc_fqdn" text, 
+                "dc_ip" text, 
                 "is_active" boolean,
                 "is_target" boolean
                 )"""
@@ -61,10 +63,10 @@ class PSMDomainModel(PSMObjectModel):
                     "fqdn" text PRIMARY KEY,
                     "netbios" text,
                     "sid" text,
-                    "dc_fqdn" text, 
+                    "dc_ip" text, 
                     "is_active" boolean,
                     "is_target" boolean
-                    FOREIGN KEY (dc_fqdn) REFERENCES Computers(fqdn)
+                    FOREIGN KEY (dc_ip) REFERENCES Computers(fqdn)
                 );
                 INSERT INTO domains SELECT * FROM domains_old;
                 COMMIT;
@@ -73,6 +75,9 @@ class PSMDomainModel(PSMObjectModel):
     def _check(self):
         if not self.fqdn:
             raise RuntimeError("Domain fqdn not provided")
+        FQDN(self.fqdn)
+        if self.dc_ip:
+            ipaddress.IPv4Address(self.dc_ip)
 
     def list(self):
         self.list_table("domains")
@@ -84,7 +89,7 @@ class PSMDomainModel(PSMObjectModel):
         return self.get_objects_dict("domains")
 
     def get(self):
-        sql = ''' SELECT netbios, sid, dc_fqdn, is_active, is_target FROM domains 
+        sql = ''' SELECT netbios, sid, dc_ip, is_active, is_target FROM domains 
                   WHERE fqdn = ? '''
         self._check()
         try: 
@@ -107,7 +112,7 @@ class PSMDomainModel(PSMObjectModel):
                 conn.close()
 
     def add(self):
-        sql = ''' INSERT INTO domains(fqdn, netbios, sid, dc_fqdn, is_active, is_target)
+        sql = ''' INSERT INTO domains(fqdn, netbios, sid, dc_ip, is_active, is_target)
                   VALUES(?, ?, ?, NULL, 0, 0) '''
         self._check()
         try: 
@@ -124,13 +129,13 @@ class PSMDomainModel(PSMObjectModel):
 
     def update(self):
         sql = ''' UPDATE domains
-                    SET netbios = ?, sid = ?, dc_fqdn = ?
+                    SET netbios = ?, sid = ?, dc_ip = ?
                   WHERE fqdn = ?'''
         self._check()
         try: 
             conn = sqlite3.connect(self.session_db_path)
             cur = conn.cursor()
-            cur.execute(sql, [self.netbios, self.sid, self.dc_fqdn, self.fqdn])
+            cur.execute(sql, [self.netbios, self.sid, self.dc_ip, self.fqdn])
             conn.commit()
         except Exception as e:
             psm_logger.error(e)
@@ -199,7 +204,7 @@ class PSMDomainModel(PSMObjectModel):
 
     def unset_dc(self):
         sql = ''' UPDATE domains
-                    SET dc_fqdn = NULL
+                    SET dc_ip = NULL
                   WHERE fqdn = ?'''
         self._check()
         try: 

@@ -23,16 +23,9 @@ class PSMGenerator:
 
     def export_etc_hosts(self):
         # get hosts
-        c_i = self.psm_computer.get_computers_dict()
-        c_f = c_i.copy()
-        c_ips = c_i.keys()
-        for c_ip in c_ips:
-            if not c_i[c_ip]["fqdns"]:
-                psm_logger.debug(f"removing {c_ip} because no FQDN")
-                c_f.pop(c_ip)
-        # remove computers without fqdn
+        computers = self.psm_computer.get_computers_ip_fqdns()
         # filter by scopes
-        r = self.psm_scope.filter_computer_dict(c_f)
+        r = self.psm_scope.filter_computer_dict(computers)
         # filter scopes
         for ip, v in r.items():
-            print(f"{ip} {", ".join(v["fqdns"])}")
+            print(f"{ip} {", ".join(v)}")

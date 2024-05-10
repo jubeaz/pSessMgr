@@ -69,17 +69,20 @@ class PSMComputer:
         self.psm_model.remove_role(role)
         self.psm_model.update()
 
-    def get_computers_dict(self):
+    def get_computers_ip_fqdns(self):
         result = {}
-        tmp = self.psm_model.get_computers_dict()
+        tmp = self.psm_model.get_computers_ip_fqdns()
         for t in tmp:
-            v = {}
-            if t["fqdns"] is None:
-                v["fqdns"] = []
-            else:     
-                v["fqdns"] = literal_eval(t["fqdns"])
-            result[t["ip"]] = v
+            if t['ip'] not in result.keys():
+                if t["fqdns"] is None:
+                    fqdns = []
+                else:     
+                    fqdns = literal_eval(t["fqdns"])
+            result[t["ip"]] = fqdns
+            if t["computed_fqdn"] is not None:
+                result[t["ip"]].append(t["computed_fqdn"])
         return result
+
 
 
     def nmap_import(self, file_path=None, dry_run=False, store_details=False):

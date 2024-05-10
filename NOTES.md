@@ -34,6 +34,7 @@ poetry run psm domain list
 
 poetry run psm domain add nrunner.local
 poetry run psm domain add research.nrunner.local
+poetry run psm domain update -n RESEARCH -s S-1-5-21-0-0-0 --dc 10.129.237.157 research.nrunner.local
 
 poetry run psm domain update -n NRUN -s S-1-5-21-2291914956-3290296217-2402366952 nrunner.local
 poetry run psm domain target nrunner.local

@@ -1,7 +1,7 @@
 # Todo
 
 ## generator
-* export-etc-hosts : add domain fqdn for domain main dc entry
+
 
 ## scope
 * manage scope inclusion / mixxing action type (hard problem)
@@ -17,5 +17,4 @@
 * no scope means all IP included
 
 ## to do
-
 * 
