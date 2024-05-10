@@ -38,6 +38,11 @@ class PSMComputer:
         self.psm_scan_model.list()
         self.psm_scandetail_model.list()
 
+    def get(self, ip):
+        self.psm_model.ip = ip
+        self.psm_model.get()
+        return self.psm_model
+
     def add(self, short_name):
         self._check()
         self.psm_model.short_name = short_name
@@ -69,7 +74,10 @@ class PSMComputer:
         self.psm_model.remove_role(role)
         self.psm_model.update()
 
-    def get_computers_ip_fqdns(self):
+    def get_dict(self):
+        return self.psm_model.get_dict()
+
+    def get_ip_fqdns(self):
         result = {}
         tmp = self.psm_model.get_computers_ip_fqdns()
         for t in tmp:

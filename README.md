@@ -1,7 +1,7 @@
 # Todo
 
 ## generator
-
+* export_etc_krb5_conf filter scope ?????????
 
 ## scope
 * manage scope inclusion / mixxing action type (hard problem)

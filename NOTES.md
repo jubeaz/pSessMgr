@@ -114,6 +114,9 @@ poetry run psm scope add  10.10.2.0/24
 # exporter
 ```bash
 poetry run psm generator export-etc-hosts
+poetry run psm generator export-ip
+poetry run psm generator export-fqdn
+poetry run psm generator export-etc-krb5-conf
 ```
 
 # bd requests

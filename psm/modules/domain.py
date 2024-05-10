@@ -59,3 +59,6 @@ class PSMDomain:
 
     def delete(self):
         self.psm_model.delete()
+
+    def get_dict(self):
+        return self.psm_model.get_dict()

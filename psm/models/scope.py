@@ -125,7 +125,7 @@ class PSMScopeModel(PSMObjectModel):
     def purge(self):
         self.purge_table("scopes")
 
-    def get_scopes_dict(self):
+    def get_dict(self):
         return self.get_objects_dict("scopes")
 
     def add(self):

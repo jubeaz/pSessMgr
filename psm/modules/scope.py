@@ -32,7 +32,7 @@ class PSMScope:
         self.psm_model.set_filter_type(filter_type)
         self.psm_model.add()
 
-    def get_scopes_dict(self):
+    def get_dict(self):
         result = {}
         tmp = self.psm_model.get_scopes_dict()
         for t in tmp:
@@ -60,7 +60,7 @@ class PSMScope:
     def block_filter_computer_dict(self, computers):
         c = {}
         c_ips = computers.keys()
-        scopes = self.get_scopes_dict()
+        scopes = self.get_dict()
         for c_ip in c_ips:
             for s in scopes.keys():
                 if IPv4Address(c_ip) in IPv4Network(s):
@@ -75,8 +75,6 @@ class PSMScope:
             return self.allow_filter_computer_dict(computers)
         return self.block_filter_computer_dict(computers)
         
-
-
 
     def delete(self):
         self.psm_model.delete()

@@ -121,11 +121,22 @@ class PSMComputerModel(PSMObjectModel):
                 psm_logger.error(f"{self.ip} is not an IPv4 address")
                 raise RuntimeError("IP not compatible")
 
-    def get_computers_dict(self):
-        return self.get_objects_dict("computers")
+    def get_dict(self):
+        result = {}
+        tmp =  self.get_objects_dict("computers")
+        for t in tmp:
+            v = {}
+            if t["fqdns"] is not None:
+                v["fqdns"] = literal_eval(t["fqdns"])
+            v["short_name"] = t["short_name"]
+            if t["roles"] is not None:
+                v["roles"] = literal_eval(t["roles"])
+            if t["services"] is not None:
+                v["services"] = literal_eval(t["services"])
+            result[t["ip"]] = v
+        return result
 
-
-    def get_computers_ip_fqdns(self):
+    def get_ip_fqdns(self):
         if self.check_table_exist('domains'):
             sql = f"select ip, fqdns, fqdn as computed_fqdn from computers as c left join domains as d on d.dc_ip == c.ip where c.fqdns != '[]'"
         else:

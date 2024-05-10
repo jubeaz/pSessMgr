@@ -85,11 +85,21 @@ class PSMDomainModel(PSMObjectModel):
     def purge(self):
         self.purge_table("domains")
 
-    def get_domains_dict(self):
-        return self.get_objects_dict("domains")
+    def get_dict(self):
+        result = {}
+        tmp =  self.get_objects_dict("domains")
+        for t in tmp:
+            v = {}
+            v["netbios"] = t["netbios"]
+            v["sid"] = t["sid"]
+            v["is_active"] = t["is_active"]
+            v["is_target"] = t["is_target"]
+            v["dc_ip"] = t["dc_ip"]
+            result[t["fqdn"]] = v
+        return result
 
     def get(self):
-        sql = ''' SELECT netbios, sid, dc_ip, is_active, is_target FROM domains 
+        sql = ''' SELECT netbios, sid, dc_ip, is_active, is_target, dc_ip FROM domains 
                   WHERE fqdn = ? '''
         self._check()
         try: 
@@ -104,6 +114,7 @@ class PSMDomainModel(PSMObjectModel):
             self.sid = record[1]
             self.is_active = record[2]
             self.is_target = record[3]
+            self.dc_ip = record[4]
         except sqlite3.Error as e:
             psm_logger.debug(e)
             raise
