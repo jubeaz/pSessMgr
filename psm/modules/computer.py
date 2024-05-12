@@ -82,7 +82,7 @@ class PSMComputer:
 
     def get_ip_fqdns(self):
         result = {}
-        tmp = self.psm_model.get_computers_ip_fqdns()
+        tmp = self.psm_model.get_ip_fqdns()
         for t in tmp:
             if t['ip'] not in result.keys():
                 if t["fqdns"] is None:

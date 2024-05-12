@@ -25,7 +25,6 @@ class PSMTool(PSMToolSuper):
                     self.cheats_vars[arg_name] = None
 
     def _apply_default_vars_value(self):
-        # recupère la config
         for v in arsenal_defaults_var_values:
             if v[0] not in self.cheats_vars.keys():
                 psm_logger.info(f"set {v[0]} to '{v[1]}'")
@@ -42,16 +41,15 @@ class PSMTool(PSMToolSuper):
 
     def load_arsenal_cheats_vars(self):
         self.cheats_vars = {}
-
         for path in Path(self.cheat_search_path).rglob('*.md'):
             self._search_for_vars(path)
         self._apply_default_vars_value()
 
-    def computer_db(self):
+    def compute_db(self):
         self.cheat_search_path = os.path.expanduser(arsenal_cheat_search_path)
         self.load_arsenal_cheats_vars()
         print(arsenal_cheat_search_path)
         raise RuntimeError('to do')
 
-    def recomputer_db(self):
+    def recompute_db(self):
         raise RuntimeError('to do')

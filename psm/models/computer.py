@@ -159,7 +159,7 @@ class PSMComputerModel(PSMObjectModel):
             conn = sqlite3.connect(self.session_db_path)
             conn.row_factory = sqlite3.Row
             cur = conn.cursor()
-            cur.execute(sql, [f"%{fqdn_pattern}%"])
+            cur.execute(sql)
             records = cur.fetchall()
         except sqlite3.Error as e:
             psm_logger.debug(e)

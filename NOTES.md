@@ -8,7 +8,7 @@ rm -rf ~/.psm ; rm -rf /tmp/psm_test
 poetry run psm session build -p /tmp psm_test  
 poetry run psm session activate psm_test
 poetry run psm session add psm_test xxxxxxx
-poetry run psm session deactivate titi
+poetry run psm session deactivate psm_test
 ```
 
 ### with system file
