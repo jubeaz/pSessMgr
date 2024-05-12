@@ -1,5 +1,10 @@
 # Todo
 
+## session 
+* build:
+    * add controle if there is an active session since
+
+
 ## generator
 * export_etc_krb5_conf filter scope ?????????
 
@@ -13,7 +18,6 @@ CNAME: bran.haas.local
 * manage scope inclusion / mixxing action type (hard problem)
 ## database
 * upgrade computer and domain models to add foreign key constraints
-
 
 # Scopes
 ## facts 

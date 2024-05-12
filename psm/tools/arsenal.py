@@ -2,37 +2,17 @@ import os
 from psm.logger import psm_logger
 import re
 from pathlib import Path
-from psm.config import arsenal_defaults_var_values, arsenal_cheat_search_path
 from ast import literal_eval
 
-class PSMTool():
-    name = 'arsenal'
-    #isolation_paths = [".arsenal.json"]
-    isolation_paths = ["~/.arsenal.json-psm"]
-    user_config_path = '.arsenal.json'
+from psm.config import arsenal_defaults_var_values, arsenal_cheat_search_path
+from psm.tools.super.toolsuper import PSMToolSuper
 
+class PSMTool(PSMToolSuper):
     cheats_vars = {}
     cheat_search_path = None
 
-    def get_isolation_paths_old(self):
-        return self.isolation_paths
-
-    def get_isolation_paths(self, dst):
-        p = []
-        for src in self.isolation_paths:
-            if os.path.isabs(src) is not True and src.startswith('~/') is not True:
-                raise RuntimeError("must start with / or ~/")
-            e = {}
-            if os.path.isabs(src):
-                e["dst"] = os.path.join(os.path.expanduser(dst), src[1:])
-                e["src"] = src
-            else: 
-                e["dst"] = os.path.join(dst, src[2:])
-                e["src"] = os.path.expanduser(src)
-            p.append(e)
-        psm_logger.debug(p)
-        return p
-
+    def __init__(self):
+        super().__init__('arsenal', ["~/.arsenal.json"])
 
     def _search_for_vars(self, md_file_path):
         with open(md_file_path, 'r') as file:
@@ -64,13 +44,8 @@ class PSMTool():
         self.cheats_vars = {}
 
         for path in Path(self.cheat_search_path).rglob('*.md'):
-            #print(path)
             self._search_for_vars(path)
-#        for k, v in self.cheats_vars.items():
-#            print(f"var[{k}] = {v}")
         self._apply_default_vars_value()
-
-
 
     def computer_db(self):
         self.cheat_search_path = os.path.expanduser(arsenal_cheat_search_path)
