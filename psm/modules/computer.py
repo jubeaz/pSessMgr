@@ -77,6 +77,16 @@ class PSMComputer:
         self.psm_model.remove_role(role)
         self.psm_model.update()
 
+    def set_fact(self, fact_key, fact_value):
+        self.psm_model.get()
+        self.psm_model.set_fact(fact_key, fact_value)
+        self.psm_model.update()
+
+    def unset_fact(self, fact_key):
+        self.psm_model.get()
+        self.psm_model.unset_fact(fact_key)
+        self.psm_model.update()
+
     def get_dict(self):
         return self.psm_model.get_dict()
 

@@ -22,6 +22,7 @@ class PSMComputerModel(PSMObjectModel):
     domain_fqdns = []
     roles = []
     services = []
+    facts = {}
 
     def __init__(self, session_db_path):
         super().__init__(session_db_path)
@@ -44,7 +45,8 @@ class PSMComputerModel(PSMObjectModel):
                 "short_name" text,
                 "domain_fqdns" text,
                 "roles" text,
-                "services" text
+                "services" text,
+                facts text
                 )"""
             )
             # commit the changes and close everything off
@@ -109,6 +111,16 @@ class PSMComputerModel(PSMObjectModel):
         if service in self.services:
             self.services.remove(service)
 
+    def set_fact(self, fact_key, fact_v, dry_run=False):
+        if dry_run is True:
+            psm_logger.info("Adding fact dry runned")
+            return 
+        self.facts[fact_key] = fact_v
+
+    def unset_fact(self, fact_key):
+        if fact_key in self.facts.keys():
+            self.services.pop(fact_key)
+
     def _check(self):
         if self.ip is None:
             raise RuntimeError("Computer IP not provided")
@@ -125,12 +137,15 @@ class PSMComputerModel(PSMObjectModel):
         v["fqdns"] = r["fqdns"]
         v["roles"] = r["roles"]
         v["services"] = r["services"]
+        v["facts"] = r["facts"]
         if r["fqdns"] is not None:
             v["fqdns"] = literal_eval(r["fqdns"])
         if r["roles"] is not None:
             v["roles"] = literal_eval(r["roles"])
         if r["services"] is not None:
             v["services"] = literal_eval(r["services"])
+        if r["facts"] is not None:
+            v["facts"] = literal_eval(r["facts"])
         return v        
 
     def get_dict(self):
@@ -176,13 +191,21 @@ class PSMComputerModel(PSMObjectModel):
     def purge(self):
         self.purge_table("computers")
 
+    def _reset(self):
+        self.fqdns = []
+        self.short_name = None
+        self.domain_fqdns = []
+        self.roles = []
+        self.services = []
+        self.facts = {}
+
     def get(self, fqdn_pattern=None):
         if fqdn_pattern:
-            sql = '''SELECT fqdns, short_name, domain_fqdns, roles, services, ip
+            sql = '''SELECT fqdns, short_name, domain_fqdns, roles, services, facts, ip
                         FROM computers 
                         WHERE fqdns like ? '''
         else:
-            sql = '''SELECT fqdns, short_name, domain_fqdns, roles, services
+            sql = '''SELECT fqdns, short_name, domain_fqdns, roles, services, facts
                         FROM computers 
                         WHERE ip = ? '''   
             self._check()
@@ -197,25 +220,20 @@ class PSMComputerModel(PSMObjectModel):
             if record is None:
                 psm_logger.error("Computer not found in db")
                 raise RuntimeError("Computer not found in db")
+            self._reset()
             self.short_name = record[1]
             if record[0] is not None:
                 self.fqdns = literal_eval(record[0])
-            else:
-                self.fqdns = []
             if record[2] is not None:
                 self.domain_fqdns = literal_eval(record[2])
-            else:
-                self.domain_fqdns = []
             if record[3] is not None:
                 self.roles = literal_eval(record[3])
-            else:
-                self.roles = []
             if record[4] is not None:
                 self.services = literal_eval(record[4])
-            else:
-                self.services = []
+            if record[5] is not None:
+                self.facts = literal_eval(record[5])
             if fqdn_pattern:
-               self.ip = record[5]
+               self.ip = record[6]
         except sqlite3.Error as e:
             psm_logger.debug(e)
             raise
@@ -224,8 +242,8 @@ class PSMComputerModel(PSMObjectModel):
                 conn.close()
 
     def add(self, dry_run=False):
-        sql = ''' INSERT INTO computers(ip, fqdns, short_name, domain_fqdns, roles, services)
-                  VALUES(?, NULL, ?, NULL, NULL, NULL)'''
+        sql = ''' INSERT INTO computers(ip, fqdns, short_name, domain_fqdns, roles, services, facts)
+                  VALUES(?, NULL, ?, NULL, NULL, NULL, NULL)'''
         if dry_run is True:
             psm_logger.info("Creating computer dry runned")
             return
@@ -244,7 +262,7 @@ class PSMComputerModel(PSMObjectModel):
 
     def update(self, dry_run=False):
         sql = ''' UPDATE computers
-                    SET short_name = ?, fqdns = ?, roles = ?, domain_fqdns = ?, services = ?
+                    SET short_name = ?, fqdns = ?, roles = ?, domain_fqdns = ?, services = ?, facts = ?
                   WHERE ip = ?'''
         if dry_run is True:
             psm_logger.info("Updating computer dry runned")
@@ -253,7 +271,7 @@ class PSMComputerModel(PSMObjectModel):
         try: 
             conn = sqlite3.connect(self.session_db_path)
             cur = conn.cursor()
-            cur.execute(sql, [self.short_name, repr(self.fqdns), repr(self.roles), repr(self.domain_fqdns), repr(self.services), self.ip])
+            cur.execute(sql, [self.short_name, repr(self.fqdns), repr(self.roles), repr(self.domain_fqdns), repr(self.services), repr(self.facts),self.ip])
             conn.commit()
         except Exception as e:
             psm_logger.error(e)

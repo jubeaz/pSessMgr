@@ -74,6 +74,8 @@ poetry run psm computer import-nmap --store-details ./tests/files/nmap_fullscan.
 poetry run psm computer import-bloodyad ./tests/files/boodyad_dnsdump.txt
 poetry run psm computer import-adidnsdump ./tests/files/adidnsdump.csv
 
+
+poetry run psm computer set-fact defender '{"satus":"Running", "extension_exception": ["ps1", ".exe'], "path_exception": []}'
 poetry run psm computer purge
 poetry run psm computer list
 

@@ -57,6 +57,14 @@ tools = [
 ```
 
 
+# usage
+
+## import computer facts from nxc
+```bash
+sqlite3  -readonly ~/documents/pentesting-games/prolabs/nrunner/.nxc/workspaces/default/smb.db '.mode json'  'select h.ip, c.name, r.secure, r.reasons from conf_checks_results as r left join hosts as h on r.host_id == h.id left join conf_checks as c on r.check_id == c.id'
+
+```
+
 # Todo
 
 ## session 

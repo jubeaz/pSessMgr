@@ -1,10 +1,13 @@
 import typer
 from typing import Optional
 from typing_extensions import Annotated
+from pathlib import Path
+from ast import literal_eval
+import json  
+
 from psm.logger import psm_logger, LOGLEVEL, set_logging_level
 from psm.modules.computer import PSMComputer
 from psm.enums import ComputerRole
-from pathlib import Path
 
 
 app = typer.Typer()
@@ -44,18 +47,7 @@ def search(
     for ip, v in records.items():
         print(f"##################")
         print(f"ip: {ip}")
-        print(f"short_name: {v["short_name"]}")
-        print("fqdns:")
-        for f in v["fqdns"]:
-            print(f"   {f}")
-        print("roles:")
-        for r in v["roles"]:
-            print(f"   {r}")
-        print("services: ")
-        for s in v["services"]:
-            for k,v in s.items():
-                print(f"   {v}: {k}")
-
+        print(json.dumps(v, indent=4))
 
 @app.command()
 def add(
@@ -97,7 +89,7 @@ def add_fqdn(
     set_logging_level(debug)
     computer = PSMComputer(ip=ip)
     computer.add_fqdn(fqdn)
-    print("[*] FQDN added updated")
+    print("[*] FQDN added")
 
 @app.command()
 def remove_fqdn(
@@ -125,7 +117,7 @@ def add_role(
     set_logging_level(debug)
     computer = PSMComputer(ip=ip)
     computer.add_role(role=role.value)
-    print("[*] Role added updated")
+    print("[*] Role added")
 
 @app.command()
 def remove_role(
@@ -141,6 +133,36 @@ def remove_role(
     computer.remove_role(role=role.value)
     print("[*] Role removed")
 
+
+@app.command()
+def set_fact(
+    ip: Annotated[str, typer.Argument()],
+    fact_key: Annotated[str, typer.Argument()],
+    fact_value: Annotated[str, typer.Argument()],
+    debug: Annotated[LOGLEVEL, typer.Option("--debug", "-d", help="debug mode")] = LOGLEVEL.DEBUG
+    ):
+    """
+    Add or modify a fact to a Computer
+    """
+    set_logging_level(debug)
+    computer = PSMComputer(ip=ip)
+    computer.set_fact(fact_key, literal_eval(fact_value))
+    print("[*] Fact added")
+
+@app.command()
+def unset_fact(
+    ip: Annotated[str, typer.Argument()],
+    fact_key: Annotated[str, typer.Argument()],
+    debug: Annotated[LOGLEVEL, typer.Option("--debug", "-d", help="debug mode")] = LOGLEVEL.DEBUG
+    ):
+    """
+    Remove a fact to a Computer
+    """
+    set_logging_level(debug)
+    computer = PSMComputer(ip=ip)
+    computer.unset_fact(fact_key)
+    print("[*] Fact removed")
+
 @app.command()
 def delete(
     ip: Annotated[str, typer.Argument()],
@@ -153,8 +175,6 @@ def delete(
     computer = PSMComputer(ip=ip)
     computer.delete()
     print("[*] Computer deleted")
-
-
 
 @app.command()
 def import_nmap(
@@ -221,8 +241,6 @@ def import_adidnsdump(
     set_logging_level(debug)
     computer = PSMComputer()
     computer.import_adidnsdump(file_path=file, dry_run=dry_run)
-
-
 
 
 if __name__ == "__main__":
