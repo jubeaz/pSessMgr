@@ -4,22 +4,10 @@
 
 ### regular (without system files)
 ```bash
-cp -r ~/documents/pentesting-games/prolabs/nrunner/evidence/logging/nxc ~/.nxc-psm ; cp ~/.arsenal.json ~/.arsenal.json-psm ; cp -r ~/documents/pentesting-games/prolabs/nrunner/evidence/logging/sqlmap/ ~/.local/share/sqlmap-psm
-
-
-
-rm -rf ~/.psm ; rm -rf titi ; rm -rf /tmp/titi ; poetry run psm session build -p /tmp titi  ; poetry run psm session activate titi
-
-rm -f ~/.
-
-
-
-ls -al ~/ | grep .nxc-psm ; ls -al ~/.nxc-psm/; ls -al ~/.arsenal.json-psm*; ls -al ~/.local/share/ | grep sqlmap-psm ; ls -al ~/.local/share/sqlmap/; 
-
-
-rm -rf ~/.psm ; rm -rf titi ; rm -rf /tmp/titi ; poetry run psm session build -p /tmp titi  ; poetry run psm session activate titi; poetry run psm session add titi sqlmap
-
-
+rm -rf ~/.psm ; rm -rf /tmp/psm_test 
+poetry run psm session build -p /tmp psm_test  
+poetry run psm session activate psm_test
+poetry run psm session add psm_test xxxxxxx
 poetry run psm session deactivate titi
 ```
 

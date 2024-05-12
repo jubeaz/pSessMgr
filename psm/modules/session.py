@@ -125,7 +125,7 @@ class PSMSession:
         os.rename(path_i["src"], f"{path_i["src"]}.psm_save")
         # create symlink
         psm_logger.debug(f"creating symlink {path_i["dst"]} => {path_i["src"]}")
-        os.symlink(path_i["ds"], path_i["src"])
+        os.symlink(path_i["dst"], path_i["src"])
 
     def _activate_tools_isolation(self):
         for path_i in self.tools_dir_paths:
