@@ -7,7 +7,7 @@ from psm.loaders.toolloader import psm_toolloader
 from psm.logger import psm_logger
 from shutil import rmtree, copytree
 from psm.psmdb import PSMDB
-from psm.config import session_template_folders, session_template_symlinks, session_template_tools, psm_config, CONFIG_PATH
+from psm.config import session_template_folders, session_template_symlinks, session_template_copies, session_template_tools, psm_config, CONFIG_PATH
 from ast import literal_eval
 
 
@@ -39,12 +39,27 @@ class PSMSession:
         # create folders
         for f in session_template_folders:
             os.makedirs(os.path.join(self.full_path, f))
-        psm_logger.debug("[*] folders created")
+        psm_logger.debug("[*] template folders created")
         # create symlins
         for s in session_template_symlinks:
-            os.symlink(s[0], os.path.join(self.full_path, s[1]))
+            src = os.path.expanduser(s[0])
+            dst = os.path.join(self.full_path, s[1])
+            psm_logger.debug(f"creating symlink {src} to {dst}")
+            os.symlink(src,dst)
+        psm_logger.debug("[*] template symlinks created")
+        # create copies
+        for c in session_template_copies:
+            src = os.path.expanduser(c[0])
+            dst = os.path.join(self.full_path, c[1])
+            if os.path.isdir(src):
+                psm_logger.debug(f"copy tree {src} to {dst}")
+                copytree(src, dst)
+            else: 
+                psm_logger.debug(f"copy file {src} to {dst}")
+                shutil.copy(src, dst)
+        psm_logger.debug("[*] template copies created")
         self._copy_tools_data()
-        psm_logger.debug("[*] symlinks created")
+        psm_logger.debug("[*] tools data copied")
         psm_logger.info("[*] session created on filesystem")
 
     def _copy_tool_data(self, tool_ame):

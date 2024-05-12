@@ -1,5 +1,7 @@
 # commands to test
 
+# commands to test
+
 ## session
 
 ### regular (without system files)
@@ -110,6 +112,7 @@ poetry run psm generator export-etc-hosts
 poetry run psm generator export-ip
 poetry run psm generator export-fqdn
 poetry run psm generator export-etc-krb5-conf
+poetry run psm generator arsenal.conf
 ```
 
 # bd requests

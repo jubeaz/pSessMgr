@@ -40,6 +40,7 @@ current_session = psm_config.get("psm", "current_session", fallback="")
 
 session_template_folders = literal_eval(psm_config.get("session_template", "folders", fallback=[]))
 session_template_symlinks = literal_eval(psm_config.get("session_template", "symlinks", fallback=[]))
+session_template_copies = literal_eval(psm_config.get("session_template", "copies", fallback=[]))
 session_template_tools = literal_eval(psm_config.get("session_template", "tools", fallback=[]))
 
 arsenal_defaults_var_values = literal_eval(psm_config.get("arsenal", "defaults_var_values", fallback=[]))
