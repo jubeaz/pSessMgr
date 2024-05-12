@@ -32,17 +32,18 @@ sudo -E rm  -rf ~/.psm ; sudo -E  rm -rf titi ; sudo  -E rm -rf  /tmp/titi ; poe
 ```bash
 poetry run psm domain list
 
-poetry run psm domain add nrunner.local
-poetry run psm domain add research.nrunner.local
-poetry run psm domain update -n RESEARCH -s S-1-5-21-0-0-0 --dc 10.129.237.157 research.nrunner.local
+poetry run psm domain add haas.local
+poetry run psm domain add weyland.local
+poetry run psm domain add research.weyland.local
 
-poetry run psm domain update -n NRUN -s S-1-5-21-2291914956-3290296217-2402366952 nrunner.local
-poetry run psm domain target nrunner.local
-poetry run psm domain target research.nrunner.local
-poetry run psm domain activate research.nrunner.local
-poetry run psm domain activate nrunner.local
-poetry run psm domain update -n RESEARCH -s S-1-5-21-2291914956-3290296217-2402366952 research.nrunner.local
-poetry run psm domain update -n RESEARCH -s S-1-5-21-0-0-0 research.nrunner.local
+poetry run psm domain update -n HAAS --dc 172.16.0.1 haas.local
+poetry run psm domain update -n WEYLAND --dc 172.16.1.1 weyland.local
+poetry run psm domain update -n RESEARCH --dc 172.16.2.1 research.weyland.local
+
+poetry run psm domain target weyland.local
+poetry run psm domain target haas.local
+poetry run psm domain activate research.weyland.local
+poetry run psm domain activate weyland.local
 ```
 
 ## computer
@@ -77,8 +78,12 @@ poetry run psm computer add-role 10.10.1.1 mssql
 poetry run psm computer remove-role 10.10.1.1 mssql
 poetry run psm computer update -s dc01 10.10.1.1 
 
-poetry run psm computer import-nmap  ./tests/files/nmap_fullscan.xml
-poetry run psm computer import-nmap  ./tests/files/nmap.xml
+poetry run psm computer import-nmap  ./tests/files/nmap_ping.xml
+poetry run psm computer import-nmap --store-details ./tests/files/nmap_fullscan.xml
+
+poetry run psm computer import-bloodyad ./tests/files/boodyad_dnsdump.txt
+poetry run psm computer import-adidnsdump ./tests/files/adidnsdump.csv
+
 poetry run psm computer purge
 poetry run psm computer list
 

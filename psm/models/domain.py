@@ -85,16 +85,21 @@ class PSMDomainModel(PSMObjectModel):
     def purge(self):
         self.purge_table("domains")
 
+
+    def get_item_from_record(self, r):
+        v = {}
+        v["netbios"] = r["netbios"]
+        v["sid"] = r["sid"]
+        v["is_active"] = r["is_active"]
+        v["is_target"] = r["is_target"]
+        v["dc_ip"] = r["dc_ip"]   
+        return v        
+
     def get_dict(self):
         result = {}
         tmp =  self.get_objects_dict("domains")
         for t in tmp:
-            v = {}
-            v["netbios"] = t["netbios"]
-            v["sid"] = t["sid"]
-            v["is_active"] = t["is_active"]
-            v["is_target"] = t["is_target"]
-            v["dc_ip"] = t["dc_ip"]
+            v = self.get_item_from_record(t)
             result[t["fqdn"]] = v
         return result
 

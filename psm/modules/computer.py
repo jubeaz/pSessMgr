@@ -2,6 +2,7 @@ import os
 from ast import literal_eval
 import ipaddress
 from libnmap.parser import NmapParser
+from fqdn import FQDN
 
 from psm.config import current_session
 from psm.modules.session import PSMSession
@@ -38,6 +39,9 @@ class PSMComputer:
         self.psm_scan_model.list()
         self.psm_scandetail_model.list()
 
+    def search_dict(self, field_name, pattern):
+        return self.psm_model.search_dict(field_name, pattern)
+
     def get(self, ip):
         self.psm_model.ip = ip
         self.psm_model.get()
@@ -52,7 +56,6 @@ class PSMComputer:
         self.psm_model.get()
         self.psm_model.short_name = short_name
         self.psm_model.update()
-
 
     def add_fqdn(self, fqdn):
         self.psm_model.get()
@@ -115,10 +118,10 @@ class PSMComputer:
                 if new is True:
                     psm_logger.info(f"Adding {host.ipv4}")
                     self.psm_model.add(dry_run)
+                    self.psm_model.get()
                 for fqdn in host.hostnames:
                     psm_logger.debug(f"Adding {fqdn} to {host.ipv4}")
                     self.psm_model.add_fqdn(fqdn)
-                    self.psm_model.update(dry_run)
                 for s in host.services:
                     if store_details:
                         self.psm_scandetail_model.status = s.state
@@ -134,8 +137,96 @@ class PSMComputer:
                         s_dict[f"{s.port}/{s.protocol}"] =  s.service
                         psm_logger.debug(f"Adding service {s_dict} to {host.ipv4}")
                         self.psm_model.add_service(s_dict, dry_run)
-                        self.psm_model.update(dry_run)
+                self.psm_model.update(dry_run)
 
+    def import_bloodyad(self, file_path=None, dry_run=False):
+        with open(file_path, "r+") as f:
+            record = {}
+            for line in f:
+                if len(line) == 1:
+                    if "ip" in record.keys():
+                        print(record)
+                        print(record["ip"])
+                        new = False
+                        self.psm_model.ip = record["ip"]
+                        try:
+                            self.psm_model.get()
+                        except:
+                            psm_logger.debug(f"New host found {record["ip"]}")
+                            new = True
+                        if new is True:
+                            psm_logger.info(f"Adding {record["ip"]}")
+                            self.psm_model.add(dry_run)
+                            self.psm_model.get()
+                        psm_logger.debug(f"Adding {record["fqdn"]} to {record["ip"]}")
+                        try: 
+                            self.psm_model.add_fqdn(record["fqdn"])
+                        except Exception as e:
+                            psm_logger.debug(f"catched {e} but continue ")
+                        self.psm_model.update(dry_run)                    
+                    record = {}
+                    continue
+                r = line.split(":")
+                if r[0] == "recordName":
+                    record["fqdn"] = r[1].replace('\n', '').replace(' ', '')
+                if r[0] == "A":
+                    record["ip"] = r[1].replace('\n', '').replace(' ', '')
+
+# more complicate since need to find zone record NS,_msdcs,dc03.haas.local.
+#  then extract domain and create domain
+#  then parse all records
+    def import_adidnsdump(self, file_path=None, dry_run=False):
+        domain_fqdn = ""
+        # first read file to get NS record and grab 
+        with open(file_path, "r+") as f:
+            for line in f:
+                r = line.split(",")
+                if r[0] == "NS" and r[1] == "@":
+                    fqdn = FQDN(r[2][:-1])
+                    domain_fqdn = fqdn.relative.split(".", 1)[1]
+        # process A records
+        with open(file_path, "r+") as f:
+            for line in f:
+                r = line.split(",")
+                if r[0] != "A":
+                    continue
+                if r[1] in ["ForestDnsZones", "DomainDnsZones", "@"]:
+                    continue
+                new = False
+                self.psm_model.ip = r[2].replace('\n', '')
+                fqdn = f"{r[1]}.{domain_fqdn}"
+                try:
+                    self.psm_model.get()
+                except:
+                    psm_logger.debug(f"New host found {r[2]}")
+                    new = True
+                if new is True:
+                    psm_logger.info(f"Adding {r[2]}")
+                    self.psm_model.add(dry_run)
+                    self.psm_model.get()
+                psm_logger.debug(f"Adding {fqdn} to {r[2]}")
+                self.psm_model.add_fqdn(fqdn)
+                self.psm_model.update(dry_run)
+        # process CNAME records
+        with open(file_path, "r+") as f:
+            for line in f:
+                r = line.split(",")
+                if r[0] != "CNAME":
+                    continue
+#                new = False
+#                self.psm_model.ip = r[2].replace('\n', '')
+                fqdn = f"{r[1]}.{domain_fqdn}"
+                computer_fqdn = r[2].replace('\n', '')[:-1]
+                print(fqdn)
+                print(computer_fqdn)
+                try:
+                    self.psm_model.get(fqdn_pattern=computer_fqdn)
+                except:
+                    psm_logger.debug(f"Computer not found {computer_fqdn} continue")
+                    continue
+                psm_logger.debug(f"Adding {fqdn} to {computer_fqdn}")
+                self.psm_model.add_fqdn(fqdn)
+                self.psm_model.update(dry_run)
 
     def delete(self):
         self.psm_model.delete_computer()

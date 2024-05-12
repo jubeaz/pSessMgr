@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE nmaprun>
+<?xml-stylesheet href="file:///usr/bin/../share/nmap/nmap.xsl" type="text/xsl"?>
+<!-- Nmap 7.94 scan initiated Sat May 11 05:21:38 2024 as: nmap -n -sn -oX nmap_ping.xml -T4 172.16.0.0/24 172.16.1.0/24 172.16.2.0/24 -->
+<nmaprun scanner="nmap" args="nmap -n -sn -oX nmap_ping.xml -T4 172.16.0.0/24 172.16.1.0/24 172.16.2.0/24" start="1715397698" startstr="Sat May 11 05:21:38 2024" version="7.94" xmloutputversion="1.05">
+<verbose level="0"/>
+<debugging level="0"/>
+<host><status state="up" reason="echo-reply" reason_ttl="127"/>
+<address addr="172.16.0.1" addrtype="ipv4"/>
+<hostnames>
+</hostnames>
+<times srtt="743" rttvar="5000" to="100000"/>
+</host>
+<host><status state="up" reason="echo-reply" reason_ttl="127"/>
+<address addr="172.16.0.10" addrtype="ipv4"/>
+<hostnames>
+</hostnames>
+<times srtt="532" rttvar="5000" to="100000"/>
+</host>
+<host><status state="up" reason="echo-reply" reason_ttl="127"/>
+<address addr="172.16.0.11" addrtype="ipv4"/>
+<hostnames>
+</hostnames>
+<times srtt="646" rttvar="3802" to="100000"/>
+</host>
+<host><status state="up" reason="echo-reply" reason_ttl="64"/>
+<address addr="172.16.0.254" addrtype="ipv4"/>
+<hostnames>
+</hostnames>
+<times srtt="544" rttvar="5000" to="100000"/>
+</host>
+<host><status state="up" reason="echo-reply" reason_ttl="127"/>
+<address addr="172.16.1.1" addrtype="ipv4"/>
+<hostnames>
+</hostnames>
+<times srtt="737" rttvar="5000" to="100000"/>
+</host>
+<host><status state="up" reason="echo-reply" reason_ttl="64"/>
+<address addr="172.16.1.254" addrtype="ipv4"/>
+<hostnames>
+</hostnames>
+<times srtt="619" rttvar="5000" to="100000"/>
+</host>
+<host><status state="up" reason="echo-reply" reason_ttl="127"/>
+<address addr="172.16.2.1" addrtype="ipv4"/>
+<hostnames>
+</hostnames>
+<times srtt="732" rttvar="5000" to="100000"/>
+</host>
+<host><status state="up" reason="echo-reply" reason_ttl="64"/>
+<address addr="172.16.2.254" addrtype="ipv4"/>
+<hostnames>
+</hostnames>
+<times srtt="576" rttvar="1293" to="100000"/>
+</host>
+<runstats><finished time="1715397706" timestr="Sat May 11 05:21:46 2024" summary="Nmap done at Sat May 11 05:21:46 2024; 768 IP addresses (8 hosts up) scanned in 8.57 seconds" elapsed="8.57" exit="success"/><hosts up="8" down="760" total="768"/>
+</runstats>
+</nmaprun>

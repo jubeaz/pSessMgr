@@ -57,8 +57,6 @@ class PSMComputerModel(PSMObjectModel):
             if conn:
                 conn.close()
 
-
-
     def add_fqdn(self, fqdn, dry_run=False):
         if dry_run is True:
             psm_logger.info("Adding FQDN dry runned")
@@ -103,7 +101,7 @@ class PSMComputerModel(PSMObjectModel):
     def add_service(self, service, dry_run=False):
         if dry_run is True:
             psm_logger.info("Adding Service dry runned")
-            return        
+            return 
         if service not in self.services:
             self.services.append(service)
 
@@ -121,18 +119,34 @@ class PSMComputerModel(PSMObjectModel):
                 psm_logger.error(f"{self.ip} is not an IPv4 address")
                 raise RuntimeError("IP not compatible")
 
+    def get_item_from_record(self, r):
+        v = {}
+        v["short_name"] = r["short_name"]
+        v["fqdns"] = r["fqdns"]
+        v["roles"] = r["roles"]
+        v["services"] = r["services"]
+        if r["fqdns"] is not None:
+            v["fqdns"] = literal_eval(r["fqdns"])
+        if r["roles"] is not None:
+            v["roles"] = literal_eval(r["roles"])
+        if r["services"] is not None:
+            v["services"] = literal_eval(r["services"])
+        return v        
+
     def get_dict(self):
         result = {}
         tmp =  self.get_objects_dict("computers")
         for t in tmp:
-            v = {}
-            if t["fqdns"] is not None:
-                v["fqdns"] = literal_eval(t["fqdns"])
-            v["short_name"] = t["short_name"]
-            if t["roles"] is not None:
-                v["roles"] = literal_eval(t["roles"])
-            if t["services"] is not None:
-                v["services"] = literal_eval(t["services"])
+            v = self.get_item_from_record(t)
+            result[t["ip"]] = v
+        return result
+
+
+    def search_dict(self, field_name, pattern):
+        result = {}
+        tmp =  self.search_object_dict("computers", field_name, pattern)
+        for t in tmp:
+            v = self.get_item_from_record(t)
             result[t["ip"]] = v
         return result
 
@@ -145,7 +159,7 @@ class PSMComputerModel(PSMObjectModel):
             conn = sqlite3.connect(self.session_db_path)
             conn.row_factory = sqlite3.Row
             cur = conn.cursor()
-            cur.execute(sql)
+            cur.execute(sql, [f"%{fqdn_pattern}%"])
             records = cur.fetchall()
         except sqlite3.Error as e:
             psm_logger.debug(e)
@@ -162,27 +176,46 @@ class PSMComputerModel(PSMObjectModel):
     def purge(self):
         self.purge_table("computers")
 
-    def get(self):
-        sql = ''' SELECT fqdns, short_name, domain_fqdns, roles, services FROM computers 
-                  WHERE ip = ? '''
-        self._check()
+    def get(self, fqdn_pattern=None):
+        if fqdn_pattern:
+            sql = '''SELECT fqdns, short_name, domain_fqdns, roles, services, ip
+                        FROM computers 
+                        WHERE fqdns like ? '''
+        else:
+            sql = '''SELECT fqdns, short_name, domain_fqdns, roles, services
+                        FROM computers 
+                        WHERE ip = ? '''   
+            self._check()
         try: 
             conn = sqlite3.connect(self.session_db_path)
             cur = conn.cursor()
-            cur.execute(sql, [self.ip])
+            if fqdn_pattern:
+                cur.execute(sql, [f"%{fqdn_pattern}%"])
+            else:
+                cur.execute(sql, [self.ip])
             record = cur.fetchone()
             if record is None:
                 psm_logger.error("Computer not found in db")
                 raise RuntimeError("Computer not found in db")
+            self.short_name = record[1]
             if record[0] is not None:
                 self.fqdns = literal_eval(record[0])
-            self.short_name = record[1]
+            else:
+                self.fqdns = []
             if record[2] is not None:
                 self.domain_fqdns = literal_eval(record[2])
+            else:
+                self.domain_fqdns = []
             if record[3] is not None:
                 self.roles = literal_eval(record[3])
+            else:
+                self.roles = []
             if record[4] is not None:
                 self.services = literal_eval(record[4])
+            else:
+                self.services = []
+            if fqdn_pattern:
+               self.ip = record[5]
         except sqlite3.Error as e:
             psm_logger.debug(e)
             raise

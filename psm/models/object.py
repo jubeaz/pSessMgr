@@ -86,6 +86,41 @@ class PSMObjectModel:
         sql= """PRAGMA foreign_key_list(?)"""
         raise RuntimeError("todo")
 
+    def get_table_fields(self, name):
+        sql= """select name from pragma_table_info(?) as tblInfo;"""
+        names = []
+        try: 
+            conn = sqlite3.connect(self.session_db_path)
+            cur = conn.cursor()
+            cur.execute(sql, [name])
+            records = cur.fetchall()
+        except Exception as e:
+            psm_logger.error(e)
+            if conn:
+                conn.close()
+            raise
+        for record in records:
+            names.append(record[0])
+        conn.close()
+        return names
+
+    def search_object_dict(self, table_name, field_name, pattern):
+        if field_name not in self.get_table_fields(table_name):
+            raise RuntimeError("Invalid field name for search_dict")
+        sql = f"SELECT * from {table_name} WHERE {field_name} LIKE ?"
+        try: 
+            conn = sqlite3.connect(self.session_db_path)
+            conn.row_factory = sqlite3.Row
+            cur = conn.cursor()
+            cur.execute(sql, [f"%{pattern}%"])
+            records = cur.fetchall()
+        except sqlite3.Error as e:
+            psm_logger.debug(e)
+            raise
+        finally:
+            if conn:
+                conn.close()
+        return records
 
     def get_objects_dict(self, table_name):
         sql = f"SELECT * from {table_name}"

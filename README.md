@@ -3,6 +3,12 @@
 ## generator
 * export_etc_krb5_conf filter scope ?????????
 
+## computer
+* bloodyad dnsDump: process alias 
+```
+recordName: sccm.haas.local
+CNAME: bran.haas.local
+```
 ## scope
 * manage scope inclusion / mixxing action type (hard problem)
 ## database

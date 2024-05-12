@@ -1,0 +1,12 @@
+type,name,value
+?,toto,?
+CNAME,sccm,bran.haas.local.
+A,ForestDnsZones,172.16.0.1
+A,fenris,172.16.0.11
+A,DomainDnsZones,172.16.0.1
+A,dc03,172.16.0.1
+A,bran,172.16.0.10
+A,architect,172.16.0.20
+NS,_msdcs,dc03.haas.local.
+A,@,172.16.0.1
+NS,@,dc03.haas.local.
