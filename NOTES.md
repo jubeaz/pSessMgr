@@ -78,10 +78,17 @@ poetry run psm computer import-adidnsdump ./tests/files/adidnsdump.csv
 poetry run psm computer set-fact defender '{"satus":"Running", "extension_exception": ["ps1", ".exe'], "path_exception": []}'
 poetry run psm computer purge
 poetry run psm computer list
+```
+
+### export nxc check_conf
+
+```bash
+sqlite3  -readonly /tmp/psm_test/.nxc/workspaces/default/smb.db '.mode json'  'select h.ip, c.name, r.secure, r.reasons from conf_checks_results as r left join hosts as h on r.host_id == h.id left join conf_checks as c on r.check_id == c.id'
 
 ```
 
-# scope
+
+## scope
 
 ```bash
 # test overlapping
@@ -108,7 +115,7 @@ poetry run psm scope add --action block 10.10.1.1
 poetry run psm scope add  10.10.2.0/24
 ```
 
-# exporter
+## exporter
 ```bash
 poetry run psm generator export-etc-hosts
 poetry run psm generator export-ip
@@ -117,7 +124,7 @@ poetry run psm generator export-etc-krb5-conf
 poetry run psm generator arsenal.conf
 ```
 
-# bd requests
+## bd requests
 ```bash
 
 sqlite3  -readonly ~/.psm/psm.db 'select * from sessions;'
