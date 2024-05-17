@@ -31,6 +31,17 @@ class PSMSession:
     def get(self):
         self.session_id, self.full_path, self.tools, self.tools_dir_paths = self.psm_db.get_session(self.name)
 
+    def info(self):
+        self.get()
+        info = {}
+        info["name"] = self.name
+        info["full_path"] = self.full_path
+        info["tools"] = self.tools
+        info["tools_dir_paths"] = self.tools_dir_paths
+        return info
+
+
+
     def _create_fs(self):
         # create folders
         for f in session_template_folders:

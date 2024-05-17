@@ -1,11 +1,16 @@
 
 import os
+import json
 from pathlib import Path
 import typer
 from typing_extensions import Annotated
+
+
 from psm.logger import LOGLEVEL, set_logging_level
 from psm.modules.session import PSMSession
 from psm.psmdb import PSMDB
+from psm.config import psm_config
+
 
 app = typer.Typer()
 
@@ -42,6 +47,18 @@ def dump():
     psm_db = PSMDB()
     psm_db.list_session()
     print("[*] Session builded")
+
+
+@app.command()
+def current():
+    """Get info on the active session"""
+    if not psm_config.get("psm", "current_session"):
+        print("[*] No active session")
+        return 
+    session = PSMSession(psm_config.get("psm", "current_session"))
+    session.info()
+    print(json.dumps(session.info(), indent=4))       
+
 
 @app.command()
 def destroy(
@@ -93,6 +110,9 @@ def remove(
     ):
     """Remove a tool to a pentest session"""
     raise RuntimeError("todo")
+
+
+
 
 if __name__ == "__main__":
     app()

@@ -70,6 +70,7 @@ sqlite3  -readonly ~/documents/pentesting-games/prolabs/nrunner/.nxc/workspaces/
 ## session 
 * `build`: add controle if there is an active session since
 * add a `remove tool` 
+* follow on session links created by templates to remove/reset them when session is activated / daactivated
 
 
 ## generator
