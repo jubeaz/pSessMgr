@@ -1,17 +1,9 @@
 import sqlite3 
-from os.path import exists
-from psm.logger import psm_logger
-from tabulate import tabulate
-import pandas as dp
-#from sqlalchemy import create_engine
-from ast import literal_eval
 from fqdn import FQDN
 import ipaddress
 
+from psm.logger import psm_logger
 from psm.models.object import PSMObjectModel
-#def create_db_engine(db_path):def create_db_engine(db_path):
-#    return create_engine(f"sqlite:///{db_path}", isolation_level="AUTOCOMMIT", future=True)
-
 
 class PSMDomainModel(PSMObjectModel):
     fqdn = None
@@ -71,6 +63,7 @@ class PSMDomainModel(PSMObjectModel):
                 INSERT INTO domains SELECT * FROM domains_old;
                 COMMIT;
                 PRAGMA foreign_keys=on;"""
+        raise RuntimeError(f"todo {sql}")
 
     def _check(self):
         if not self.fqdn:
@@ -104,8 +97,8 @@ class PSMDomainModel(PSMObjectModel):
         return result
 
     def get(self):
-        sql = ''' SELECT netbios, sid, dc_ip, is_active, is_target, dc_ip FROM domains 
-                  WHERE fqdn = ? '''
+        sql = """ SELECT netbios, sid, dc_ip, is_active, is_target, dc_ip FROM domains 
+                  WHERE fqdn = ? """
         self._check()
         try: 
             conn = sqlite3.connect(self.session_db_path)
@@ -128,8 +121,8 @@ class PSMDomainModel(PSMObjectModel):
                 conn.close()
 
     def add(self):
-        sql = ''' INSERT INTO domains(fqdn, netbios, sid, dc_ip, is_active, is_target)
-                  VALUES(?, ?, ?, NULL, 0, 0) '''
+        sql = """ INSERT INTO domains(fqdn, netbios, sid, dc_ip, is_active, is_target)
+                  VALUES(?, ?, ?, NULL, 0, 0) """
         self._check()
         try: 
             conn = sqlite3.connect(self.session_db_path)
@@ -144,9 +137,9 @@ class PSMDomainModel(PSMObjectModel):
                 conn.close()
 
     def update(self):
-        sql = ''' UPDATE domains
+        sql = """ UPDATE domains
                     SET netbios = ?, sid = ?, dc_ip = ?
-                  WHERE fqdn = ?'''
+                  WHERE fqdn = ?"""
         self._check()
         try: 
             conn = sqlite3.connect(self.session_db_path)
@@ -161,11 +154,11 @@ class PSMDomainModel(PSMObjectModel):
                 conn.close()
 
     def activate(self):
-        sql_d = ''' UPDATE domains
-                    SET is_active = 0'''
-        sql_a = ''' UPDATE domains
+        sql_d = """ UPDATE domains
+                    SET is_active = 0"""
+        sql_a = """ UPDATE domains
                     SET is_active = 1
-                  WHERE fqdn = ?'''
+                  WHERE fqdn = ?"""
         self._check()
         try: 
             conn = sqlite3.connect(self.session_db_path)
@@ -182,11 +175,11 @@ class PSMDomainModel(PSMObjectModel):
                 conn.close()
 
     def target(self):
-        sql_d = ''' UPDATE domains
-                    SET is_target = 0'''
-        sql_a = ''' UPDATE domains
+        sql_d = """ UPDATE domains
+                    SET is_target = 0"""
+        sql_a = """ UPDATE domains
                     SET is_target = 1
-                  WHERE fqdn = ?'''
+                  WHERE fqdn = ?"""
         self._check()
         try: 
             conn = sqlite3.connect(self.session_db_path)
@@ -203,8 +196,8 @@ class PSMDomainModel(PSMObjectModel):
                 conn.close()
 
     def delete(self):
-        sql = ''' DELETE FROM domains
-                  WHERE fqdn = ?'''
+        sql = """ DELETE FROM domains
+                  WHERE fqdn = ?"""
         self._check()
         try: 
             conn = sqlite3.connect(self.session_db_path)
@@ -219,9 +212,9 @@ class PSMDomainModel(PSMObjectModel):
                 conn.close()
 
     def unset_dc(self):
-        sql = ''' UPDATE domains
+        sql = """ UPDATE domains
                     SET dc_ip = NULL
-                  WHERE fqdn = ?'''
+                  WHERE fqdn = ?"""
         self._check()
         try: 
             conn = sqlite3.connect(self.session_db_path)

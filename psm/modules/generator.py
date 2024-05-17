@@ -1,10 +1,6 @@
-import os
-from psm.config import current_session
-from psm.modules.session import PSMSession
 from psm.modules.domain import PSMDomain
 from psm.modules.computer import PSMComputer
 from psm.modules.scope import PSMScope
-from psm.paths import SESSION_DB_NAME
 from psm.logger import psm_logger
 
 
@@ -33,7 +29,7 @@ class PSMGenerator:
         computers = self.psm_computer.get_dict()
         # filter by scopes
         r = self.psm_scope.filter_computer_dict(computers)
-        for ip, v in r.items():
+        for ip in r:
             print(f"{ip}")
 
 
@@ -56,7 +52,6 @@ class PSMGenerator:
                 try: 
                     c = self.psm_computer.get(v["dc_ip"])
                     if c.fqdns:
-                        str = f"{fqdn.upper()} = {{ kdc = {c.fqdns[0]} }}"
-                        print(str)
-                except: 
+                        print(f"{fqdn.upper()} = {{ kdc = {c.fqdns[0]} }}")
+                except Exception: 
                     psm_logger.info(f"Referenced DC for {fqdn} with ip {v["dc_ip"]} not found")

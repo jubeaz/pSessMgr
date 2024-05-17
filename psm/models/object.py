@@ -1,12 +1,9 @@
 import sqlite3 
 from tabulate import tabulate
-import pandas as dp
-from sqlalchemy import create_engine
-from ast import literal_eval
+import pandas as pd
 from os.path import exists
 
 from psm.logger import psm_logger
-from psm.paths import SESSION_DB_NAME
 
 class PSMObjectModel:
     session_db_path = None
@@ -41,8 +38,8 @@ class PSMObjectModel:
     def list_table(self, table_name):
         try: 
             conn = sqlite3.connect(self.session_db_path)
-            tb_ss = dp.read_sql(f"SELECT * FROM {table_name}", conn)
-            psm_logger.info(tabulate(tb_ss, showindex=False, headers=tb_ss.columns, tablefmt='grid'))
+            tb_ss = pd.read_sql(f"SELECT * FROM {table_name}", conn)
+            psm_logger.info(tabulate(tb_ss, showindex=False, headers=tb_ss.columns, tablefmt="grid"))
         except Exception as e:
             psm_logger.error(e)
             raise
@@ -66,9 +63,9 @@ class PSMObjectModel:
                 conn.close()
 
     def check_table_exist(self, name):
-        sql = '''SELECT name 
+        sql = """SELECT name 
                 FROM sqlite_master 
-                WHERE  name = ?'''
+                WHERE  name = ?"""
         try: 
             conn = sqlite3.connect(self.session_db_path)
             cur = conn.cursor()
@@ -84,7 +81,7 @@ class PSMObjectModel:
 
     def get_table_fkeys(self, name):
         sql= """PRAGMA foreign_key_list(?)"""
-        raise RuntimeError("todo")
+        raise RuntimeError(f"todo {sql}")
 
     def get_table_fields(self, name):
         sql= """select name from pragma_table_info(?) as tblInfo;"""
@@ -99,20 +96,26 @@ class PSMObjectModel:
             if conn:
                 conn.close()
             raise
-        for record in records:
-            names.append(record[0])
+        names.append(record[0] for record in records)
+
         conn.close()
         return names
 
-    def search_object_dict(self, table_name, field_name, pattern):
-        if field_name not in self.get_table_fields(table_name):
-            raise RuntimeError("Invalid field name for search_dict")
-        sql = f"SELECT * from {table_name} WHERE {field_name} LIKE ?"
+    def search_object_dict(self, table_name, field_name=None, pattern=None):
+        sql = f"SELECT * from {table_name}"
+        if field_name is not None:
+            if field_name not in self.get_table_fields(table_name):
+                raise RuntimeError("Invalid field name for search_dict")
+            sql = f"SELECT * from {table_name} WHERE {field_name} LIKE ?"
+        
         try: 
             conn = sqlite3.connect(self.session_db_path)
             conn.row_factory = sqlite3.Row
             cur = conn.cursor()
-            cur.execute(sql, [f"%{pattern}%"])
+            if field_name is not None:
+                cur.execute(sql, [f"%{pattern}%"])
+            else:
+                cur.execute(sql)
             records = cur.fetchall()
         except sqlite3.Error as e:
             psm_logger.debug(e)

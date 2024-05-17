@@ -3,7 +3,6 @@ from psm.config import current_session
 from psm.modules.session import PSMSession
 from psm.models.domain import PSMDomainModel
 from psm.paths import SESSION_DB_NAME
-from psm.logger import psm_logger
 
 class PSMDomain:
     psm_model = None
@@ -16,12 +15,6 @@ class PSMDomain:
         session_db_path = os.path.join(self.psm_session.full_path, SESSION_DB_NAME)
         self.psm_model = PSMDomainModel(session_db_path)
         self.psm_model.fqdn = fqdn
-
-#    def get(self):
-#        self.fqdn, self.netbios, self.sid, self.is_active, self.is_target = self.psm_model.get_domain(self.fqdn)
-#        if self.fqdn is None:
-#            psm.logger.error("Domain not found in db")
-#            raise RuntimeError("Domain not found in db")
 
     def _check(self):
         if self.psm_model.fqdn is None:

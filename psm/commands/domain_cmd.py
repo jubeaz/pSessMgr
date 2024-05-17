@@ -1,7 +1,6 @@
 import typer
-from typing import Optional
 from typing_extensions import Annotated
-from psm.logger import psm_logger, LOGLEVEL, set_logging_level
+from psm.logger import LOGLEVEL, set_logging_level
 from psm.modules.domain import PSMDomain
 
 app = typer.Typer()
@@ -14,9 +13,7 @@ def add(
     sid: Annotated[str, typer.Option("--sid", "-s", help="SID")] = None,
     debug: Annotated[LOGLEVEL, typer.Option("--debug", "-d", help="debug mode")] = LOGLEVEL.DEBUG
     ):
-    """
-    Create a new domain
-    """
+    """Create a new domain"""
     set_logging_level(debug)
     domain = PSMDomain(fqdn=fqdn)
     domain.add(netbios=netbios, sid=sid)
@@ -30,9 +27,7 @@ def update(
     dc_ip: Annotated[str, typer.Option("--dc", help="DC IP")] = None,
     debug: Annotated[LOGLEVEL, typer.Option("--debug", "-d", help="debug mode")] = LOGLEVEL.DEBUG
     ):
-    """
-    Update a domain
-    """
+    """Update a domain"""
     set_logging_level(debug)
     domain = PSMDomain(fqdn=fqdn)
     domain.update(netbios=netbios, sid=sid, dc_ip=dc_ip)
@@ -44,9 +39,7 @@ def unset_dc(
     fqdn: Annotated[str, typer.Argument()],
     debug: Annotated[LOGLEVEL, typer.Option("--debug", "-d", help="debug mode")] = LOGLEVEL.DEBUG
     ):
-    """
-    Update a domain
-    """
+    """Update a domain"""
     set_logging_level(debug)
     domain = PSMDomain(fqdn=fqdn)
     domain.unset_dc()
@@ -58,9 +51,7 @@ def activate(
     fqdn: Annotated[str, typer.Argument()],
     debug: Annotated[LOGLEVEL, typer.Option("--debug", "-d", help="debug mode")] = LOGLEVEL.DEBUG
     ):
-    """
-    Activate a domain
-    """
+    """Activate a domain"""
     set_logging_level(debug)
     domain = PSMDomain(fqdn=fqdn)
     domain.activate()
@@ -71,9 +62,7 @@ def target(
     fqdn: Annotated[str, typer.Argument()],
     debug: Annotated[LOGLEVEL, typer.Option("--debug", "-d", help="debug mode")] = LOGLEVEL.DEBUG
     ):
-    """
-    Target a domain
-    """
+    """Target a domain"""
     set_logging_level(debug)
     domain = PSMDomain(fqdn=fqdn)
     domain.target()
@@ -84,48 +73,25 @@ def delete(
     fqdn: Annotated[str, typer.Argument()],
     debug: Annotated[LOGLEVEL, typer.Option("--debug", "-d", help="debug mode")] = LOGLEVEL.DEBUG
     ):
-    """
-    Delete a domain
-    """
+    """Delete a domain"""
     set_logging_level(debug)
     domain = PSMDomain(fqdn=fqdn)
     domain.delete()
     print("[*] Domain deleted")
 
-#@app.command()
-#def set_dc(
-#    fqdn: Annotated[str, typer.Argument()],
-#    dc_fqdn: Annotated[str, typer.Argument()],
-#    debug: Annotated[LOGLEVEL, typer.Option("--debug", "-d", help="debug mode")] = LOGLEVEL.DEBUG
-#    ):
-#    """
-#    Delete a domain
-#    """
-#    set_logging_level(debug)
-#    domain = PSMDomain(fqdn=fqdn)
-#    domain.set_dc(dc_fqdn)
-#    print("[*] Domain builded")
-
-
 @app.command()
 def purge(
     debug: Annotated[LOGLEVEL, typer.Option("--debug", "-d", help="debug mode")] = LOGLEVEL.DEBUG
     ):
-    """
-    Delete all Domains
-    """
+    """Delete all Domains"""
     set_logging_level(debug)
     domain = PSMDomain()
     domain.purge()
     print("[*] Domain purged")
 
-
-
 @app.command()
-def list():
-    """
-    List domains
-    """
+def dump():
+    """List domains"""
     set_logging_level(LOGLEVEL.INFO)
     domain = PSMDomain()
     domain.list()

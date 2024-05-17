@@ -1,11 +1,4 @@
 import sqlite3 
-from os.path import exists
-from tabulate import tabulate
-import pandas as dp
-from sqlalchemy import create_engine
-from ast import literal_eval
-from fqdn import FQDN
-import ipaddress
 
 from psm.logger import psm_logger
 from psm.models.object import PSMObjectModel
@@ -59,35 +52,10 @@ class PSMNmapScanModel(PSMObjectModel):
     def purge(self):
         self.purge_table("nmapscan")
 
-#    def get(self):
-#        sql = ''' SELECT fqdns, short_name, domain_fqdns, roles FROM computers 
-#                  WHERE ip = ? '''
-#        self._check()
-#        try: 
-#            conn = sqlite3.connect(self.session_db_path)
-#            cur = conn.cursor()
-#            cur.execute(sql, [self.ip])
-#            record = cur.fetchone()
-#            if record is None:
-#                psm_logger.error("Computer not found in db")
-#                raise RuntimeError("Computer not found in db")
-#            if record[0] is not None:
-#                self.fqdns = literal_eval(record[0])
-#            self.short_name = record[1]
-#            if record[2] is not None:
-#                self.domain_fqdns = literal_eval(record[2])
-#            if record[3] is not None:
-#                self.roles = literal_eval(record[3])
-#        except sqlite3.Error as e:
-#            psm_logger.debug(e)
-#            raise
-#        finally:
-#            if conn:
-#                conn.close()
 
     def add(self, dry_run=False):
-        sql = ''' INSERT INTO nmapscan(timestamp, cmdline, file_path)
-                  VALUES(?, ?, ?)'''
+        sql = """ INSERT INTO nmapscan(timestamp, cmdline, file_path)
+                  VALUES(?, ?, ?)"""
         if dry_run is True:
             psm_logger.info("Creating scan dry runned")
             return

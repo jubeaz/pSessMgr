@@ -1,14 +1,10 @@
 import os
-import configparser
-import sys
 import shutil
-import importlib.util
 from psm.loaders.toolloader import psm_toolloader
 from psm.logger import psm_logger
 from shutil import rmtree, copytree
 from psm.psmdb import PSMDB
 from psm.config import session_template_folders, session_template_symlinks, session_template_copies, session_template_tools, psm_config, CONFIG_PATH
-from ast import literal_eval
 
 
 class PSMSession:
@@ -83,7 +79,7 @@ class PSMSession:
 
     def _copy_tools_data(self):
         tools = psm_toolloader.get_tools(session_template_tools)
-        for tool_name in tools.keys():
+        for tool_name in tools:
             self._copy_tool_data(tool_name)
             self.tools.append(tool_name)
         psm_logger.debug(f"notes {self.tools_dir_paths}")
@@ -105,7 +101,7 @@ class PSMSession:
                                                     self.tools, 
                                                     self.tools_dir_paths,
                                                     )
-            psm_logger.debug("[*] db entry added as {}".format(session_id))
+            psm_logger.debug(f"[*] db entry added as {session_id}")
             psm_logger.info("[*] session created in database")
         except Exception as e:
             psm_logger.error(e)
@@ -152,7 +148,7 @@ class PSMSession:
         # manage tools links in case new tools
         self.get()
         if self.session_id == -1:
-            psm.logger.error(f"Session {name} not found in db")
+            psm_logger.error(f"Session {self.name} not found in db")
             raise RuntimeError("Session not found in db")
         if self.isactive():
             psm_logger.info(f"[*] session {self.name} already active")
@@ -184,7 +180,7 @@ class PSMSession:
     def deactivate(self):
         self.get()
         if self.session_id == -1:
-            psm.logger.error("Session not found in db")
+            psm_logger.error("Session not found in db")
             raise RuntimeError("Session not found in db")
         if not self.isactive():
             psm_logger.info(f"[*] session {self.name} is not active")
@@ -198,12 +194,12 @@ class PSMSession:
 
     def add_tool(self, tool_name):
         tools = psm_toolloader.get_unfiltered_tools()
-        if tool_name not in tools.keys():
+        if tool_name not in tools:
             psm_logger.error(f"[*] {tool_name} not supported")
             raise RuntimeError("Unsupported tool")
         self.get()
         if self.session_id == -1:
-            psm.logger.error("Session not found in db")
+            psm_logger.error("Session not found in db")
             raise RuntimeError("Session not found in db")
         if tool_name in self.tools:
             psm_logger.error(f"[*] {tool_name} already isolated in session")

@@ -1,5 +1,4 @@
 import os
-import sys
 import psm
 
 PSM_PATH = os.path.expanduser("~/.psm")

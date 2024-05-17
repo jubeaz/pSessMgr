@@ -1,22 +1,13 @@
 import sqlite3 
-from os.path import exists
-from tabulate import tabulate
-import pandas as dp
-from sqlalchemy import create_engine
-from ast import literal_eval
-from fqdn import FQDN
 import ipaddress
 
 from psm.logger import psm_logger
 from psm.models.object import PSMObjectModel
 from psm.enums import FilterType
 
-#def create_db_engine(db_path):def create_db_engine(db_path):
-#    return create_engine(f"sqlite:///{db_path}", isolation_level="AUTOCOMMIT", future=True)
 
 
 class PSMScopeModel(PSMObjectModel):
-# psm_session_db
     scope = None
     _allow = True
 
@@ -92,10 +83,9 @@ class PSMScopeModel(PSMObjectModel):
             if ipaddress.IPv4Network(self.scope).overlaps(ipaddress.IPv4Network(e["scope"])):
                 psm_logger.debug(f"{self.scope} overlaps with {e["scope"]}")
                 raise RuntimeError("Overlaping scopes")
-        if self.get_defined_scoping_action() is not None:
-            if self.get_filter_type().value != self.get_defined_scoping_action().value:
-                psm_logger.debug(f"{self.scope} allow {self._allow} whereas {e["scope"]} allow {e["allow"]}")
-                raise RuntimeError("Scope types mixing")
+        if self.get_defined_scoping_action() is not None and self.get_filter_type().value != self.get_defined_scoping_action().value:
+            psm_logger.debug(f"{self.scope} allow {self._allow} whereas {e["scope"]} allow {e["allow"]}")
+            raise RuntimeError("Scope types mixing")
 
 
     def _check_datatype(self):
@@ -113,7 +103,7 @@ class PSMScopeModel(PSMObjectModel):
                 ipaddress.IPv4Network(self.scope)
             except Exception:
                 psm_logger.error(f"{self.scope} is not an IPv4 network address")
-                raise RuntimeError("Network address not compatible")
+                raise RuntimeError("Network address not compatible") from None
 
     def _check(self):
         self._check_datatype()
@@ -129,8 +119,8 @@ class PSMScopeModel(PSMObjectModel):
         return self.get_objects_dict("scopes")
 
     def add(self):
-        sql = ''' INSERT INTO scopes(scope, allow)
-                  VALUES(?, ?)'''
+        sql = """ INSERT INTO scopes(scope, allow)
+                  VALUES(?, ?)"""
         self._check()
         try: 
             conn = sqlite3.connect(self.session_db_path)
@@ -145,8 +135,8 @@ class PSMScopeModel(PSMObjectModel):
                 conn.close()
 
     def delete(self):
-        sql = ''' DELETE FROM scopes
-                  WHERE scope = ?'''
+        sql = """ DELETE FROM scopes
+                  WHERE scope = ?"""
         self._check()
         try: 
             conn = sqlite3.connect(self.session_db_path)

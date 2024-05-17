@@ -1,17 +1,10 @@
 import sqlite3 
-from os.path import exists
-from tabulate import tabulate
-import pandas as dp
-from sqlalchemy import create_engine
 from ast import literal_eval
 from fqdn import FQDN
 import ipaddress
 
 from psm.logger import psm_logger
 from psm.models.object import PSMObjectModel
-
-#def create_db_engine(db_path):def create_db_engine(db_path):
-#    return create_engine(f"sqlite:///{db_path}", isolation_level="AUTOCOMMIT", future=True)
 
 
 class PSMComputerModel(PSMObjectModel):
@@ -118,7 +111,7 @@ class PSMComputerModel(PSMObjectModel):
         self.facts[fact_key] = fact_v
 
     def unset_fact(self, fact_key):
-        if fact_key in self.facts.keys():
+        if fact_key in self.facts:
             self.services.pop(fact_key)
 
     def _check(self):
@@ -127,9 +120,9 @@ class PSMComputerModel(PSMObjectModel):
         else: 
             try: 
                 ipaddress.IPv4Address(self.ip)
-            except AddressValueError:
+            except ipaddress.AddressValueError:
                 psm_logger.error(f"{self.ip} is not an IPv4 address")
-                raise RuntimeError("IP not compatible")
+                raise RuntimeError("IP not compatible") from None
 
     def get_item_from_record(self, r):
         v = {}
@@ -157,19 +150,18 @@ class PSMComputerModel(PSMObjectModel):
         return result
 
 
-    def search_dict(self, field_name, pattern):
+    def search_dict(self, field_name=None, pattern=None):
         result = {}
-        tmp =  self.search_object_dict("computers", field_name, pattern)
+        tmp =  self.search_object_dict("computers", field_name=field_name, pattern=field_name)
         for t in tmp:
             v = self.get_item_from_record(t)
             result[t["ip"]] = v
         return result
 
     def get_ip_fqdns(self):
-        if self.check_table_exist('domains'):
-            sql = f"select ip, fqdns, fqdn as computed_fqdn from computers as c left join domains as d on d.dc_ip == c.ip where c.fqdns != '[]'"
-        else:
-            sql = f"SELECT ip, fqdns, NULL as computed_fqdn from computers where fqdns != '[]'"
+        sql = "SELECT ip, fqdns, NULL as computed_fqdn from computers where fqdns != '[]'"
+        if self.check_table_exist("domains"):
+            sql = "select ip, fqdns, fqdn as computed_fqdn from computers as c left join domains as d on d.dc_ip == c.ip where c.fqdns != '[]'"
         try: 
             conn = sqlite3.connect(self.session_db_path)
             conn.row_factory = sqlite3.Row
@@ -201,13 +193,13 @@ class PSMComputerModel(PSMObjectModel):
 
     def get(self, fqdn_pattern=None):
         if fqdn_pattern:
-            sql = '''SELECT fqdns, short_name, domain_fqdns, roles, services, facts, ip
+            sql = """SELECT fqdns, short_name, domain_fqdns, roles, services, facts, ip
                         FROM computers 
-                        WHERE fqdns like ? '''
+                        WHERE fqdns like ? """
         else:
-            sql = '''SELECT fqdns, short_name, domain_fqdns, roles, services, facts
+            sql = """SELECT fqdns, short_name, domain_fqdns, roles, services, facts
                         FROM computers 
-                        WHERE ip = ? '''   
+                        WHERE ip = ? """   
             self._check()
         try: 
             conn = sqlite3.connect(self.session_db_path)
@@ -242,8 +234,8 @@ class PSMComputerModel(PSMObjectModel):
                 conn.close()
 
     def add(self, dry_run=False):
-        sql = ''' INSERT INTO computers(ip, fqdns, short_name, domain_fqdns, roles, services, facts)
-                  VALUES(?, NULL, ?, NULL, NULL, NULL, NULL)'''
+        sql = """ INSERT INTO computers(ip, fqdns, short_name, domain_fqdns, roles, services, facts)
+                  VALUES(?, NULL, ?, NULL, NULL, NULL, NULL)"""
         if dry_run is True:
             psm_logger.info("Creating computer dry runned")
             return
@@ -261,9 +253,9 @@ class PSMComputerModel(PSMObjectModel):
                 conn.close()
 
     def update(self, dry_run=False):
-        sql = ''' UPDATE computers
+        sql = """ UPDATE computers
                     SET short_name = ?, fqdns = ?, roles = ?, domain_fqdns = ?, services = ?, facts = ?
-                  WHERE ip = ?'''
+                  WHERE ip = ?"""
         if dry_run is True:
             psm_logger.info("Updating computer dry runned")
             return
@@ -281,8 +273,8 @@ class PSMComputerModel(PSMObjectModel):
                 conn.close()
 
     def delete(self):
-        sql = ''' DELETE FROM computers
-                  WHERE fqdn = ?'''
+        sql = """ DELETE FROM computers
+                  WHERE fqdn = ?"""
         self._check()
         try: 
             conn = sqlite3.connect(self.session_db_path)

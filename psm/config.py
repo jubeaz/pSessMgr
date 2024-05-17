@@ -1,5 +1,3 @@
-import os
-import sys
 import configparser
 from os.path import join as path_join
 from psm.paths import PSM_PATH, DEFAULT_CONFIG_PATH, CONFIG_PATH

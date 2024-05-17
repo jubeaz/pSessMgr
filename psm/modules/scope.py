@@ -1,5 +1,4 @@
 import os
-from ast import literal_eval
 from ipaddress import IPv4Address, IPv4Network
 from psm.config import current_session
 from psm.modules.session import PSMSession
@@ -50,7 +49,7 @@ class PSMScope:
         c_ips = computers.keys()
         scopes = self.get_dict()
         for c_ip in c_ips:
-            for s in scopes.keys():
+            for s in scopes:
                 if IPv4Address(c_ip) in IPv4Network(s):
                     psm_logger.debug(f"{c_ip} remove since belongs to {s}")
                     c.pop(c_ip)
@@ -62,7 +61,7 @@ class PSMScope:
         c_ips = computers.keys()
         scopes = self.get_dict()
         for c_ip in c_ips:
-            for s in scopes.keys():
+            for s in scopes:
                 if IPv4Address(c_ip) in IPv4Network(s):
                     psm_logger.debug(f"{c_ip} add since belongs to {s}")
                     c[c_ip] = computers[c_ip]

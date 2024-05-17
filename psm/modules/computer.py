@@ -1,6 +1,5 @@
 import os
 from ast import literal_eval
-import ipaddress
 from libnmap.parser import NmapParser
 from fqdn import FQDN
 
@@ -39,8 +38,8 @@ class PSMComputer:
         self.psm_scan_model.list()
         self.psm_scandetail_model.list()
 
-    def search_dict(self, field_name, pattern):
-        return self.psm_model.search_dict(field_name, pattern)
+    def search_dict(self, field_name=None, pattern=None):
+        return self.psm_model.search_dict(field_name=field_name, pattern=pattern)
 
     def get(self, ip):
         self.psm_model.ip = ip
@@ -59,7 +58,7 @@ class PSMComputer:
 
     def add_fqdn(self, fqdn):
         self.psm_model.get()
-        self.psm_model.add_fqdn(fqdn, dry_run)
+        self.psm_model.add_fqdn(fqdn)
         self.psm_model.update()
 
     def remove_fqdn(self, fqdn):
@@ -94,11 +93,8 @@ class PSMComputer:
         result = {}
         tmp = self.psm_model.get_ip_fqdns()
         for t in tmp:
-            if t['ip'] not in result.keys():
-                if t["fqdns"] is None:
-                    fqdns = []
-                else:     
-                    fqdns = literal_eval(t["fqdns"])
+            if t["ip"] not in result:
+                fqdns = [] if t["fqdns"] is None else literal_eval(t["fqdns"])
             result[t["ip"]] = fqdns
             if t["computed_fqdn"] is not None:
                 result[t["ip"]].append(t["computed_fqdn"])
@@ -122,7 +118,7 @@ class PSMComputer:
                 self.psm_model.ip = host.ipv4
                 try:
                     self.psm_model.get()
-                except:
+                except Exception:
                     psm_logger.debug(f"New host found {host.ipv4}")
                     new = True
                 if new is True:
@@ -154,14 +150,14 @@ class PSMComputer:
             record = {}
             for line in f:
                 if len(line) == 1:
-                    if "ip" in record.keys():
+                    if "ip" in record:
                         print(record)
                         print(record["ip"])
                         new = False
                         self.psm_model.ip = record["ip"]
                         try:
                             self.psm_model.get()
-                        except:
+                        except Exception:
                             psm_logger.debug(f"New host found {record["ip"]}")
                             new = True
                         if new is True:
@@ -178,9 +174,9 @@ class PSMComputer:
                     continue
                 r = line.split(":")
                 if r[0] == "recordName":
-                    record["fqdn"] = r[1].replace('\n', '').replace(' ', '')
+                    record["fqdn"] = r[1].replace("\n", "").replace(" ", "")
                 if r[0] == "A":
-                    record["ip"] = r[1].replace('\n', '').replace(' ', '')
+                    record["ip"] = r[1].replace("\n", "").replace(" ", "")
 
 # more complicate since need to find zone record NS,_msdcs,dc03.haas.local.
 #  then extract domain and create domain
@@ -203,11 +199,11 @@ class PSMComputer:
                 if r[1] in ["ForestDnsZones", "DomainDnsZones", "@"]:
                     continue
                 new = False
-                self.psm_model.ip = r[2].replace('\n', '')
+                self.psm_model.ip = r[2].replace("\n", "")
                 fqdn = f"{r[1]}.{domain_fqdn}"
                 try:
                     self.psm_model.get()
-                except:
+                except Exception:
                     psm_logger.debug(f"New host found {r[2]}")
                     new = True
                 if new is True:
@@ -223,15 +219,13 @@ class PSMComputer:
                 r = line.split(",")
                 if r[0] != "CNAME":
                     continue
-#                new = False
-#                self.psm_model.ip = r[2].replace('\n', '')
                 fqdn = f"{r[1]}.{domain_fqdn}"
-                computer_fqdn = r[2].replace('\n', '')[:-1]
+                computer_fqdn = r[2].replace("\n", "")[:-1]
                 print(fqdn)
                 print(computer_fqdn)
                 try:
                     self.psm_model.get(fqdn_pattern=computer_fqdn)
-                except:
+                except Exception:
                     psm_logger.debug(f"Computer not found {computer_fqdn} continue")
                     continue
                 psm_logger.debug(f"Adding {fqdn} to {computer_fqdn}")

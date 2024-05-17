@@ -3,15 +3,10 @@ from os.path import exists
 from psm.paths import DB_PATH
 from psm.logger import psm_logger
 from tabulate import tabulate
-import pandas as dp
-from sqlalchemy import create_engine
+import pandas as pd
 from ast import literal_eval
 
-#def create_db_engine(db_path):def create_db_engine(db_path):
-#    return create_engine(f"sqlite:///{db_path}", isolation_level="AUTOCOMMIT", future=True)
-
-
-class PSMDB():
+class PSMDB:
     def __init__(self):
         self.db_path = DB_PATH
 
@@ -49,8 +44,8 @@ class PSMDB():
         return conn
     
     def create_session(self, name, full_path, tools, tools_dir_paths):
-        sql = ''' INSERT INTO sessions(name, full_path, tools, tools_dir_paths)
-                  VALUES(?, ?, ?, ?) '''
+        sql = """ INSERT INTO sessions(name, full_path, tools, tools_dir_paths)
+                  VALUES(?, ?, ?, ?) """
         if not full_path:
             raise RuntimeError("no path provided")
         try: 
@@ -60,7 +55,7 @@ class PSMDB():
             conn.commit()
         except sqlite3.Error as e:
             psm_logger.error(e)
-            raise RuntimeError("create_sesssion_error")
+            raise RuntimeError("create_sesssion_error") from None
         finally:
             psm_logger.debug(f" db creation of {name}, {full_path}, {tools_dir_paths}")
             if conn:
@@ -70,12 +65,12 @@ class PSMDB():
     
     def list_session(self):
         conn = self.create_connection()
-        tb_ss = dp.read_sql("SELECT * FROM sessions", conn)
-        psm_logger.info(tabulate(tb_ss, showindex=False, headers=tb_ss.columns, tablefmt='grid'))
+        tb_ss = pd.read_sql("SELECT * FROM sessions", conn)
+        psm_logger.info(tabulate(tb_ss, showindex=False, headers=tb_ss.columns, tablefmt="grid"))
 
     def get_session(self, name):
-        sql = ''' SELECT id, full_path, tools, tools_dir_paths FROM sessions 
-                  WHERE name = ? '''
+        sql = """ SELECT id, full_path, tools, tools_dir_paths FROM sessions 
+                  WHERE name = ? """
         if not name:
             raise RuntimeError("no name provided")
         try: 
@@ -100,9 +95,9 @@ class PSMDB():
         return session_id, full_path, tools, tools_dir_paths
 
     def update_session(self, session_id, tools, tools_dir_paths):
-        sql = ''' UPDATE sessions 
+        sql = """ UPDATE sessions 
                     SET tools = ?, tools_dir_paths = ?
-                  WHERE id = ? '''
+                  WHERE id = ? """
         try: 
             conn = self.create_connection()
             cur = conn.cursor()
@@ -114,8 +109,8 @@ class PSMDB():
             raise
 
     def delete_session(self, session_id):
-        sql = ''' DELETE FROM sessions 
-                  WHERE id = ? '''
+        sql = """ DELETE FROM sessions 
+                  WHERE id = ? """
         try: 
             conn = self.create_connection()
             cur = conn.cursor()

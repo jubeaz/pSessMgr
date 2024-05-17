@@ -3,8 +3,7 @@ import os
 from pathlib import Path
 import typer
 from typing_extensions import Annotated
-from typing import Optional
-from psm.logger import psm_logger, LOGLEVEL, set_logging_level
+from psm.logger import LOGLEVEL, set_logging_level
 from psm.modules.session import PSMSession
 from psm.psmdb import PSMDB
 
@@ -30,19 +29,15 @@ def build(
     ],
     debug: Annotated[LOGLEVEL, typer.Option("--debug", "-d", help="debug mode")] = LOGLEVEL.DEBUG
     ):
-    """
-    Build a new pentest session
-    """
+    """Build a new pentest session"""
     set_logging_level(debug)
     session = PSMSession(name=name,path=path)
     session.build()
     print("[*] Session builded")
 
 @app.command()
-def list():
-    """
-    List pentest sessions
-    """
+def dump():
+    """List pentest sessions"""
     set_logging_level(LOGLEVEL.INFO)
     psm_db = PSMDB()
     psm_db.list_session()
@@ -53,9 +48,7 @@ def destroy(
     name: Annotated[str, typer.Argument()],
     debug: Annotated[LOGLEVEL, typer.Option("--debug", "-d", help="debug mode")] = LOGLEVEL.DEBUG
     ):
-    """
-    Destroy an inactive pentest session
-    """
+    """Destroy an inactive pentest session"""
     session = PSMSession(name=name)
     session.destroy()
     print("[*] Session destoyed")
@@ -65,9 +58,7 @@ def activate(
     name: Annotated[str, typer.Argument()],
     debug: Annotated[LOGLEVEL, typer.Option("--debug", "-d", help="debug mode")] = LOGLEVEL.DEBUG
     ):
-    """
-    Activate a pentest session
-    """
+    """Activate a pentest session"""
     session = PSMSession(name=name)
     session.activate()
     print("[*] Session activated")
@@ -77,9 +68,7 @@ def deactivate(
     name: Annotated[str, typer.Argument()],
     debug: Annotated[LOGLEVEL, typer.Option("--debug", "-d", help="debug mode")] = LOGLEVEL.DEBUG
     ):
-    """
-    Deactivate a pentest session
-    """
+    """Deactivate a pentest session"""
     session = PSMSession(name=name)
     session.deactivate()
     print("[*] Session deactivated")
@@ -91,9 +80,7 @@ def add(
     tool_name: Annotated[str, typer.Argument()],
     debug: Annotated[LOGLEVEL, typer.Option("--debug", "-d", help="debug mode")] = LOGLEVEL.DEBUG
     ):
-    """
-    Add a tool to a pentest session (with activation if session is active)
-    """
+    """Add a tool to a pentest session (with activation if session is active)"""
     session = PSMSession(name=name)
     session.add_tool(tool_name)
     print("[*] Tool added")
@@ -104,9 +91,7 @@ def remove(
     tool_name: Annotated[str, typer.Argument()],
     debug: Annotated[LOGLEVEL, typer.Option("--debug", "-d", help="debug mode")] = LOGLEVEL.DEBUG
     ):
-    """
-    Remove a tool to a pentest session
-    """
+    """Remove a tool to a pentest session"""
     raise RuntimeError("todo")
 
 if __name__ == "__main__":
