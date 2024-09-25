@@ -12,7 +12,7 @@ class PSMTool(PSMToolSuper):
     cheat_search_path = None
 
     def __init__(self):
-        super().__init__('arsenal', ["~/.arsenal.json"])
+        super().__init__('arsenalng', ["~/.arsenalng.json"])
 
     def _search_for_vars(self, md_file_path):
         with open(md_file_path, 'r') as file:

@@ -97,7 +97,7 @@ def add(
     tool_name: Annotated[str, typer.Argument()],
     debug: Annotated[LOGLEVEL, typer.Option("--debug", "-d", help="debug mode")] = LOGLEVEL.DEBUG
     ):
-    """Add a tool to a pentest session (with activation if session is active)"""
+    """Add a tool to a pentest session (with isolation if session is active)"""
     session = PSMSession(name=name)
     session.add_tool(tool_name)
     print("[*] Tool added")

@@ -219,6 +219,7 @@ class PSMSession:
         self.tools.append(tool_name)
         # update db
         self.psm_db.update_session(self.session_id, self.tools, self.tools_dir_paths)
+        # if session is active process isaolation
         if self.isactive():
             psm_logger.info(f"[*] isolating {tool_name} in {self.name}")
             m = psm_toolloader.load_tool(tool_name)
